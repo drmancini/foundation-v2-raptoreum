@@ -29,10 +29,6 @@ const Manager = function(config, configMain) {
     const currentIndex = utils.getDifficultyIndex(currentRotation, config.rotations);
     const newRotation = utils.getCryptoNightRotation(newHash);
     const newIndex = utils.getDifficultyIndex(newRotation, config.rotations);
-    // console.log('current: ' + currentRotation);
-    // console.log('current index: ' + currentIndex);
-    // console.log('new: ' + newRotation);
-    // console.log('new index: ' + newIndex);
     const difficultyRatio = Math.floor(100 * newIndex / currentIndex) / 100;
 
     _this.emit('manager.block.rotation', difficultyRatio);
