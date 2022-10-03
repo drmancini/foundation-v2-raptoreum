@@ -23,6 +23,21 @@ const Manager = function(config, configMain) {
   this.extraNoncePlaceholder = Buffer.from('f000000ff111111f', 'hex');
   this.extraNonce2Size = _this.extraNoncePlaceholder.length - _this.extraNonceCounter.size;
 
+  // Calculate CryptoNight Rotation Difficulty Ratio
+  this.handleAlgorithmRotation = function(currentHash, newHash) {
+    const currentRotation = utils.getCryptoNightRotation(currentHash);
+    const currentIndex = utils.getDifficultyIndex(currentRotation, config.rotations);
+    const newRotation = utils.getCryptoNightRotation(newHash);
+    const newIndex = utils.getDifficultyIndex(newRotation, config.rotations);
+    // console.log('current: ' + currentRotation);
+    // console.log('current index: ' + currentIndex);
+    // console.log('new: ' + newRotation);
+    // console.log('new index: ' + newIndex);
+    const difficultyRatio = Math.floor(100 * newIndex / currentIndex) / 100;
+
+    _this.emit('manager.block.rotation', difficultyRatio);
+  }
+  
   // Check if New Block is Processed
   this.handleUpdates = function(rpcData) {
 
@@ -32,6 +47,11 @@ const Manager = function(config, configMain) {
       _this.config,
       Object.assign({}, rpcData),
       _this.extraNoncePlaceholder);
+
+    // Detect CryptoNight rotation
+    if (tmpTemplate.rpcData.height > _this.currentJob.rpcData.height) {
+      _this.handleAlgorithmRotation(_this.currentJob.rpcData.previousblockhash, tmpTemplate.rpcData.previousblockhash);
+    }
 
     // Update Current Template
     _this.currentJob = tmpTemplate;
@@ -59,6 +79,12 @@ const Manager = function(config, configMain) {
       Object.assign({}, rpcData),
       _this.extraNoncePlaceholder);
 
+      
+    // Detect CryptoNight rotation
+    if (_this.currentJob != null && (tmpTemplate.rpcData.height > _this.currentJob.rpcData.height)) {
+      _this.handleAlgorithmRotation(_this.currentJob.rpcData.previousblockhash, tmpTemplate.rpcData.previousblockhash);
+    }
+
     // Update Current Template
     _this.validJobs = {};
     _this.currentJob = tmpTemplate;
@@ -72,6 +98,7 @@ const Manager = function(config, configMain) {
 
     // Main Submission Variables
     let difficulty = client.difficulty;
+    let smartnode = 0;
     const submitTime = Date.now() / 1000 | 0;
     const job = _this.validJobs[jobId];
     const nTimeInt = parseInt(submission.nTime, 16);
@@ -94,6 +121,7 @@ const Manager = function(config, configMain) {
         difficulty: difficulty,
         identifier: _this.configMain.identifier || '',
         error: error[1],
+        submitTime: submitTime,
       }, false);
       return { error: error, response: null };
     };
@@ -159,6 +187,13 @@ const Manager = function(config, configMain) {
       }
     }
 
+    // Calculate Smartnode Rewards
+    if (job.rpcData.smartnode.length > 0) {
+      job.rpcData.smartnode.forEach((node) => {
+        smartnode += node.amount;
+      })
+    } 
+
     // Build Primary Share Object Data
     const shareData = {
       job: jobId,
@@ -171,6 +206,7 @@ const Manager = function(config, configMain) {
       blockType: blockValid ? 'primary' : 'share',
       coinbase: coinbaseBuffer,
       difficulty: difficulty,
+      founder: job.rpcData.founder.amount || 0,
       hash: blockHash,
       hex: blockHex,
       header: headerHash,
@@ -179,6 +215,8 @@ const Manager = function(config, configMain) {
       identifier: _this.configMain.identifier || '',
       reward: job.rpcData.coinbasevalue,
       shareDiff: shareDiff.toFixed(8),
+      smartnode: smartnode,
+      submitTime: submitTime,
     };
 
     const auxShareData = {
@@ -198,6 +236,7 @@ const Manager = function(config, configMain) {
       headerDiff: headerBigInt,
       identifier: _this.configMain.identifier || '',
       shareDiff: shareDiff.toFixed(8),
+      submitTime: submitTime,
     };
 
     _this.emit('manager.share', shareData, auxShareData, blockValid);

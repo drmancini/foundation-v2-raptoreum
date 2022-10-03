@@ -234,6 +234,43 @@ exports.getEncodingLength = function(data) {
         : 5;
 };
 
+// Identify CryptoNight Algorithm Rotation from Block Header
+exports.getCryptoNightRotation = function(hash) {
+  const rotation = [];
+  
+  for (let i = hash.length - 1; i >= 0; i--) {
+    if (rotation.length === 3) {
+      break;
+    } else {
+      const nibble = parseInt(hash[i], 16);
+      const algorithm = nibble % 6;
+      if (!rotation.includes(algorithm)) {
+        rotation.push(algorithm);
+      }
+    }
+  }
+
+  console.log('rotation: ' + rotation)
+  return rotation;
+}
+
+// Assing Difficulty Index to CryptoNight Rotation
+exports.getDifficultyIndex = function (rotation, cnRotations) {
+  rotation.sort((a, b) => a - b);
+  const cnAlgorithms = [
+    'Dark',
+    'Darklite',
+    'Fast',
+    'Lite',
+    'Turtle',
+    'Turtlelite'
+  ];
+  const rotationName = cnAlgorithms[rotation[0]] + cnAlgorithms[rotation[1]] + cnAlgorithms[rotation[2]];
+
+  console.log('rotation name: ' + cnRotations[rotationName])
+  return cnRotations[rotationName];
+};
+
 // Calculate Merkle Steps for Transactions
 exports.getMerkleSteps = function(transactions) {
   const hashes = exports.convertHashToBuffer(transactions);
