@@ -94,7 +94,6 @@ const Manager = function(config, configMain) {
 
     // Main Submission Variables
     let difficulty = client.difficulty;
-    let smartnode = 0;
     const submitTime = Date.now() / 1000 | 0;
     const job = _this.validJobs[jobId];
     const nTimeInt = parseInt(submission.nTime, 16);
@@ -183,13 +182,6 @@ const Manager = function(config, configMain) {
       }
     }
 
-    // Calculate Smartnode Rewards
-    if (job.rpcData.smartnode.length > 0) {
-      job.rpcData.smartnode.forEach((node) => {
-        smartnode += node.amount;
-      })
-    } 
-
     // Build Primary Share Object Data
     const shareData = {
       job: jobId,
@@ -202,7 +194,6 @@ const Manager = function(config, configMain) {
       blockType: blockValid ? 'primary' : 'share',
       coinbase: coinbaseBuffer,
       difficulty: difficulty,
-      founder: job.rpcData.founder.amount || 0,
       hash: blockHash,
       hex: blockHex,
       header: headerHash,
@@ -211,7 +202,6 @@ const Manager = function(config, configMain) {
       identifier: _this.configMain.identifier || '',
       reward: job.rpcData.coinbasevalue,
       shareDiff: shareDiff.toFixed(8),
-      smartnode: smartnode,
       submitTime: submitTime,
     };
 
