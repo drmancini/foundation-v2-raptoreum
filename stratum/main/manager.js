@@ -116,7 +116,7 @@ const Manager = function(config, configMain) {
         difficulty: difficulty,
         identifier: _this.configMain.identifier || '',
         error: error[1],
-        submitTime: submitTime,
+        submitted: submitTime,
       }, false);
       return { error: error, response: null };
     };
@@ -202,7 +202,7 @@ const Manager = function(config, configMain) {
       identifier: _this.configMain.identifier || '',
       reward: job.rpcData.coinbasevalue,
       shareDiff: shareDiff.toFixed(8),
-      submitTime: submitTime,
+      submitted: submitTime,
     };
 
     const auxShareData = {
@@ -222,7 +222,7 @@ const Manager = function(config, configMain) {
       headerDiff: headerBigInt,
       identifier: _this.configMain.identifier || '',
       shareDiff: shareDiff.toFixed(8),
-      submitTime: submitTime,
+      submitted: submitTime,
     };
 
     _this.emit('manager.share', shareData, auxShareData, blockValid);
