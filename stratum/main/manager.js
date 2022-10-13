@@ -94,7 +94,8 @@ const Manager = function(config, configMain) {
 
     // Main Submission Variables
     let difficulty = client.difficulty;
-    const submitTime = Date.now() / 1000 | 0;
+    const timestamp = Date.now();
+    const submitTime = timestamp / 1000 | 0;
     const job = _this.validJobs[jobId];
     const nTimeInt = parseInt(submission.nTime, 16);
 
@@ -116,7 +117,7 @@ const Manager = function(config, configMain) {
         difficulty: difficulty,
         identifier: _this.configMain.identifier || '',
         error: error[1],
-        submitTime: submitTime,
+        submitTime: timestamp,
       }, false);
       return { error: error, response: null };
     };
@@ -202,7 +203,7 @@ const Manager = function(config, configMain) {
       identifier: _this.configMain.identifier || '',
       reward: job.rpcData.coinbasevalue,
       shareDiff: shareDiff.toFixed(8),
-      submitTime: submitTime,
+      submitTime: timestamp,
     };
 
     const auxShareData = {
@@ -222,7 +223,7 @@ const Manager = function(config, configMain) {
       headerDiff: headerBigInt,
       identifier: _this.configMain.identifier || '',
       shareDiff: shareDiff.toFixed(8),
-      submitTime: submitTime,
+      submitTime: timestamp,
     };
 
     _this.emit('manager.share', shareData, auxShareData, blockValid);
