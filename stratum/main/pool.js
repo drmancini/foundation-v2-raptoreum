@@ -924,16 +924,16 @@ const Pool = function(config, configMain, callback) {
       _this.handlePrimary(shareData, blockValid, (accepted, outputData) => {
         
         // Check if This Instance Emits Network Changes
-        if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'master') {
-          _this.emit('pool.share', outputData, shareValid, accepted);
-        } else {
+        if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'stratum') {
+
           // Delete Data Unnecessary for Share Processing
           delete outputData.hex;
           delete outputData.header;
           delete outputData.headerDiff;
           delete outputData.coinbase;
-
           _this.emit('pool.meta_share', outputData, shareValid, accepted);
+        } else {
+          _this.emit('pool.share', outputData, shareValid, accepted);
         };
         
         _this.handlePrimaryTemplate(auxBlockValid, (error, result, newBlock) => {
@@ -948,9 +948,8 @@ const Pool = function(config, configMain, callback) {
         _this.handleAuxiliary(auxShareData, true, (accepted, outputData) => {
 
           // Check if This Instance Emits Network Changes
-          if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'master') {
-            _this.emit('pool.share', outputData, shareValid, accepted);
-          } else {
+          if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'stratum') {
+            
             // Delete Data Unnecessary for Share Processing
             delete outputData.hex;
             delete outputData.header;
@@ -958,6 +957,8 @@ const Pool = function(config, configMain, callback) {
             delete outputData.coinbase;
 
             _this.emit('pool.meta_share', outputData, shareValid, accepted);
+          } else {
+            _this.emit('pool.share', outputData, shareValid, accepted);
           };
 
           if (accepted && auxBlockValid) {
@@ -971,7 +972,7 @@ const Pool = function(config, configMain, callback) {
     _this.manager.on('manager.block.new', (template) => {
 
       // Check if This Instance Emits Network Changes
-      if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'master') {
+      if (!_this.configMain.stratum.lean || _this.configMain.stratum.instance != 'stratum') {
         // Process Primary Network Data
         _this.checkNetwork(_this.primary.daemon, 'primary', (networkData) => {
           _this.emit('pool.network', networkData);
