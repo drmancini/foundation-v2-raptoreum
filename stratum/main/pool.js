@@ -925,10 +925,10 @@ const Pool = function(config, configMain, callback) {
 
         // Check For Lean Stratum and Stratum Mode
         if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'stratum') {
-          // delete outputData.hex;
-          // delete outputData.header;
-          // delete outputData.headerDiff;
-          // delete outputData.coinbase;
+          delete outputData.hex;
+          delete outputData.header;
+          delete outputData.headerDiff;
+          delete outputData.coinbase;
           _this.emit('pool.meta_share', outputData, shareValid, accepted);
         } else {
           _this.emit('pool.share', outputData, shareValid, accepted);

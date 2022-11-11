@@ -14,9 +14,7 @@ config.settings = {};
 
 // Stratum Configuration
 config.stratum = {};
-config.stratum.lean = true;
-config.stratum.instance = 'stratum';
-// config.stratum.instance = 'master';
+config.stratum.lean = false;
 
 // Banning Configuration
 config.settings.banning = {};
