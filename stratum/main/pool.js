@@ -925,13 +925,13 @@ const Pool = function(config, configMain, callback) {
 
         // Check if This Instance Emits Network Changes
         if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'stratum') {
+          _this.emit('pool.metashare', outputData, shareValid, accepted);
           console.log('stratum primary share handling')
           // Delete Data Unnecessary for Share Processing
-          delete outputData.hex;
-          delete outputData.header;
-          delete outputData.headerDiff;
-          delete outputData.coinbase;
-          _this.emit('pool.meta_share', outputData, shareValid, accepted);
+          // delete outputData.hex;
+          // delete outputData.header;
+          // delete outputData.headerDiff;
+          // delete outputData.coinbase;
         } else {
           console.log('master primary share handling')
           _this.emit('pool.share', outputData, shareValid, accepted);
@@ -950,6 +950,8 @@ const Pool = function(config, configMain, callback) {
 
           // Check if This Instance Emits Network Changes
           if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'stratum') {
+            _this.emit('pool.metashare', outputData, shareValid, accepted);
+
             console.log('stratum aux share handling')
             // Delete Data Unnecessary for Share Processing
             delete outputData.hex;
@@ -957,7 +959,6 @@ const Pool = function(config, configMain, callback) {
             delete outputData.headerDiff;
             delete outputData.coinbase;
 
-            _this.emit('pool.meta_share', outputData, shareValid, accepted);
           } else {
             console.log('master aux share handling')
             _this.emit('pool.share', outputData, shareValid, accepted);
