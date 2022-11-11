@@ -923,20 +923,22 @@ const Pool = function(config, configMain, callback) {
       // Process Share/Primary Submission
       _this.handlePrimary(shareData, blockValid, (accepted, outputData) => {
 
-        // Check if This Instance Emits Network Changes
+        // Check For Lean Stratum and Stratum Mode
         if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'stratum') {
-          _this.emit('pool.metashare', outputData, shareValid, accepted);
-          console.log('stratum primary share handling')
+          console.log('correct');
+          _this.emit('pool.share', outputData, shareValid, accepted);
+
           // Delete Data Unnecessary for Share Processing
           // delete outputData.hex;
           // delete outputData.header;
           // delete outputData.headerDiff;
           // delete outputData.coinbase;
+          // _this.emit('pool.metashare', outputData, shareValid, accepted);
         } else {
-          console.log('master primary share handling')
+          console.log('wrong');
           _this.emit('pool.share', outputData, shareValid, accepted);
-        };
-        
+        }
+
         _this.handlePrimaryTemplate(auxBlockValid, (error, result, newBlock) => {
           if (accepted && newBlock && blockValid) {
             _this.emitLog('special', false, _this.text.stratumManagerText1());
