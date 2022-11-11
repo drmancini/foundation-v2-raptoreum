@@ -922,9 +922,6 @@ const Pool = function(config, configMain, callback) {
 
       // Process Share/Primary Submission
       _this.handlePrimary(shareData, blockValid, (accepted, outputData) => {
-        
-        //test
-        _this.emit('pool.share', outputData, shareValid, accepted);
 
         // Check if This Instance Emits Network Changes
         if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'stratum') {
