@@ -45,14 +45,7 @@ const Stratum = function (logger, config, configMain) {
     });
 
     // Handle Stratum Share Events
-    _this.stratum.on('pool.meta_share', (shareData, shareValid) => {
-      console.log('stratum: on pool meta_share')
-      _this.handleShareProcessed(shareData, shareValid);
-    });
-
-    // Handle Stratum Share Events
     _this.stratum.on('pool.share', (shareData, shareValid) => {
-      console.log('stratum: on pool share')
       _this.handleShareProcessed(shareData, shareValid);
     });
   };
