@@ -926,7 +926,7 @@ const Pool = function(config, configMain, callback) {
         // Check For Lean Stratum and Stratum Mode
         if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'stratum') {
           console.log('correct');
-          _this.emit('pool.share', outputData, shareValid, accepted);
+          _this.emit('pool.meta_share', outputData, shareValid, accepted);
 
           // Delete Data Unnecessary for Share Processing
           // delete outputData.hex;
@@ -952,7 +952,7 @@ const Pool = function(config, configMain, callback) {
 
           // Check if This Instance Emits Network Changes
           if (_this.configMain.stratum.lean && _this.configMain.stratum.instance == 'stratum') {
-            _this.emit('pool.metashare', outputData, shareValid, accepted);
+            _this.emit('pool.meta_share', outputData, shareValid, accepted);
 
             console.log('stratum aux share handling')
             // Delete Data Unnecessary for Share Processing
