@@ -955,7 +955,6 @@ const Pool = function(config, configMain, callback) {
             delete outputData.coinbase;
             _this.emit('pool.meta_share', outputData, shareValid, accepted);
           } else {
-            console.log('master aux share handling')
             _this.emit('pool.share', outputData, shareValid, accepted);
           };
 
@@ -971,7 +970,7 @@ const Pool = function(config, configMain, callback) {
 
       // Check if This Instance Emits Network Changes
       if (!_this.configMain.stratum.lean || _this.configMain.stratum.instance != 'stratum') {
-        console.log('master network handling')
+
         // Process Primary Network Data
         _this.checkNetwork(_this.primary.daemon, 'primary', (networkData) => {
           _this.emit('pool.network', networkData);
