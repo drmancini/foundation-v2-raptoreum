@@ -20,6 +20,7 @@ const Client = function(config, socket, id, authorizeFn) {
 
   // Difficulty Variables
   this.pendingDifficulty = null;
+  this.algorithmRotationRatio = null;
   this.staticDifficulty = false;
 
   // Send JSON Messages
@@ -188,6 +189,11 @@ const Client = function(config, socket, id, authorizeFn) {
     return true;
   };
 
+  // Broadcast Change CryptoNight Rotation Difficulty
+  this.broadcastDifficultyRatio = function(difficultyRatio) {
+    _this.algorithmRotationRatio = difficultyRatio;
+  };
+
   // Broadcast Mining Job to Stratum Client
   this.broadcastMiningJob = function(parameters) {
 
@@ -201,10 +207,24 @@ const Client = function(config, socket, id, authorizeFn) {
     }
 
     // Update Client Difficulty
-    if (_this.pendingDifficulty != null) {
+    if (_this.algorithmRotationRatio != null || _this.pendingDifficulty != null) {
+      if (!_this.config.rotations.enabled) _this.algorithmRotationRatio = 1;
+
+      console.log('_this.algorithmRotationRatio: ' + _this.algorithmRotationRatio);
+      console.log('_this.pendingDifficulty: ' + _this.pendingDifficulty);
+      console.log('_this.difficulty: ' + _this.difficulty);
+
+      _this.pendingDifficulty = _this.pendingDifficulty != null ? _this.pendingDifficulty : _this.difficulty;
+      _this.algorithmRotationRatio = _this.algorithmRotationRatio != null ? _this.algorithmRotationRatio : 1;
+
+      _this.pendingDifficulty *= _this.algorithmRotationRatio;
+
+      if (_this.pendingDifficulty === 1) _this.pendingDifficulty = null;
+      
       const result = _this.broadcastDifficulty(_this.pendingDifficulty);
       if (result) _this.emit('client.difficulty.updated', _this.difficulty);
       _this.pendingDifficulty = null;
+      _this.algorithmRotationRatio = null;
     }
 
     // Broadcast Mining Job to Client

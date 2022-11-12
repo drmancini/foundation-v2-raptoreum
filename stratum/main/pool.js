@@ -941,6 +941,11 @@ const Pool = function(config, configMain, callback) {
       }
     });
 
+    // Handle Ghostrider Algorithm Rotation
+    _this.manager.on('manager.block.rotation', (difficultyRatio) => {
+      if (_this.network) _this.network.broadcastDifficulties(difficultyRatio);
+    });
+
     // Handle New Block Templates
     _this.manager.on('manager.block.new', (template) => {
 

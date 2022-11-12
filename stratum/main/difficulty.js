@@ -10,7 +10,7 @@ const Difficulty = function(config) {
   this.clients = {};
 
   // Difficulty Variables
-  this.maxSize = _this.config.retargetTime / _this.config.targetTime * 4;
+  this.maxSize = _this.config.retargetTime / _this.config.targetTime * 10;
   this.minTime = _this.config.targetTime * (1 + _this.config.variance);
   this.maxTime = _this.config.targetTime * (1 - _this.config.variance);
 

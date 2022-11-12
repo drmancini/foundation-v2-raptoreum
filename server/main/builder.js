@@ -57,7 +57,7 @@ const Builder = function(logger, configMain) {
       _this.createPoolWorkers(_this.numWorkers);
       _this.numWorkers += 1;
       if (_this.numWorkers === numForks) {
-        const lines = [_this.text.builderWorkersText2(1, numForks)];
+        const lines = [_this.text.builderWorkersText3(1, numForks)];
         _this.logger.debug('Builder', 'Workers', lines);
         clearInterval(startInterval);
       }
