@@ -155,9 +155,25 @@ const Pool = function(config, configMain, callback) {
     const combined = {};
     workers.forEach((worker) => {
       if (worker.miner in combined) {
+        combined[worker.miner].invalid += worker.invalid;
+        combined[worker.miner].stale += worker.stale;
         combined[worker.miner].times += worker.times;
+        combined[worker.miner].valid += worker.valid;
         combined[worker.miner].work += worker.work;
-      } else combined[worker.miner] = { times: worker.times, work: worker.work };
+      } else combined[worker.miner] = {
+        timestamp: block.submitted,
+        miner: worker.miner,
+        worker: worker.worker,
+        identifier: worker.identifier,
+        invalid: worker.invalid,
+        round: block.round,
+        solo: worker.solo,
+        stale:worker.stale,
+        times: worker.times, 
+        type: worker.type,
+        valid: worker.valid,
+        work: worker.work
+      };
     });
 
     // Calculate Maximum Worker Time
@@ -193,7 +209,7 @@ const Pool = function(config, configMain, callback) {
     });
 
     // Return Worker Rewards
-    return updates;
+    return { rewards: updates, combinedRound: combined };
   };
 
   // Process Primary Block Candidate
@@ -413,12 +429,13 @@ const Pool = function(config, configMain, callback) {
 
     // Determine Block Handling Procedures
     const updates = {};
+    const combinedRounds = []; 
     blocks.forEach((block, idx) => {
       const current = workers[idx] || [];
       if (block.type !== 'primary') return;
 
       // Establish Separate Behavior
-      let immature, generate;
+      let immature, generate, validated;
       switch (block.category) {
 
       // Orphan Behavior
@@ -427,7 +444,8 @@ const Pool = function(config, configMain, callback) {
 
       // Immature Behavior
       case 'immature':
-        immature = _this.handleValidation(block, current);
+        validated = _this.handleValidation(block, current);
+        immature = validated.rewards;
         Object.keys(immature).forEach((address) => {
           if (address in updates) updates[address].immature += immature[address];
           else updates[address] = { immature: immature[address], generate: 0 };
@@ -436,7 +454,9 @@ const Pool = function(config, configMain, callback) {
 
       // Generate Behavior
       case 'generate':
-        generate = _this.handleValidation(block, current);
+        validated = _this.handleValidation(block, current);
+        generate = validated.rewards;
+        combinedRounds.push(validated.combinedRound);
         Object.keys(generate).forEach((address) => {
           if (address in updates) updates[address].generate += generate[address];
           else updates[address] = { immature: 0, generate: generate[address] };
@@ -450,7 +470,7 @@ const Pool = function(config, configMain, callback) {
     });
 
     // Return Updated Worker Data
-    callback(updates);
+    callback(updates, combinedRounds);
   };
 
   // Validate Primary Balance and Checks
@@ -767,12 +787,13 @@ const Pool = function(config, configMain, callback) {
 
     // Determine Block Handling Procedures
     const updates = {};
+    const combinedRounds = []; 
     blocks.forEach((block, idx) => {
       const current = workers[idx] || [];
       if (block.type !== 'auxiliary') return;
 
       // Establish Separate Behavior
-      let immature, generate;
+      let immature, generate, validated;
       switch (block.category) {
 
       // Orphan Behavior
@@ -781,7 +802,8 @@ const Pool = function(config, configMain, callback) {
 
       // Immature Behavior
       case 'immature':
-        immature = _this.handleValidation(block, current);
+        validated = _this.handleValidation(block, current);
+        immature = validated.rewards;
         Object.keys(immature).forEach((address) => {
           if (address in updates) updates[address].immature += immature[address];
           else updates[address] = { immature: immature[address], generate: 0 };
@@ -790,7 +812,9 @@ const Pool = function(config, configMain, callback) {
 
       // Generate Behavior
       case 'generate':
-        generate = _this.handleValidation(block, current);
+        validated = _this.handleValidation(block, current); 
+        generate = validated.rewards;
+        combinedRounds.push(validated.combinedRound);
         Object.keys(generate).forEach((address) => {
           if (address in updates) updates[address].generate += generate[address];
           else updates[address] = { immature: 0, generate: generate[address] };
@@ -804,7 +828,7 @@ const Pool = function(config, configMain, callback) {
     });
 
     // Return Updated Worker Data
-    callback(updates);
+    callback(updates, combinedRounds);
   };
 
   // Validate Auxiliary Balance and Checks
