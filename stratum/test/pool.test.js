@@ -2025,7 +2025,7 @@ describe('Test pool functionality', () => {
     const client = mockClient();
     const pool = new Pool(configCopy, configMainCopy, () => {});
     pool.on('client.socket.success', () => {
-      client.emit('client.subscription', {}, () => {
+      client.emit('client.subscription', () => {
         pool.network.on('network.stopped', () => done());
         pool.network.stopNetwork();
       });
@@ -2051,7 +2051,7 @@ describe('Test pool functionality', () => {
     const client = mockClient();
     const pool = new Pool(configCopy, configMainCopy, () => {});
     pool.on('client.socket.success', () => {
-      client.emit('client.subscription', {}, () => {
+      client.emit('client.subscription', () => {
         pool.network.on('network.stopped', () => done());
         pool.network.stopNetwork();
       });
@@ -2194,7 +2194,7 @@ describe('Test pool functionality', () => {
           result: { isvalid: false, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.checkPrimaryWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
         done();
       });
     });
@@ -2211,7 +2211,7 @@ describe('Test pool functionality', () => {
           result: null
         }));
       pool.checkPrimaryWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
         done();
       });
     });
@@ -2249,7 +2249,7 @@ describe('Test pool functionality', () => {
           result: { isvalid: false, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.checkAuxiliaryWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
         done();
       });
     });
@@ -2261,7 +2261,7 @@ describe('Test pool functionality', () => {
     const pool = new Pool(configCopy, configMainCopy, () => {});
     mockSetupDaemons(pool, () => {
       pool.checkAuxiliaryWorker('0.0.0.0', 3001, null, () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
         done();
       });
     });
@@ -2288,7 +2288,7 @@ describe('Test pool functionality', () => {
           result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', null, 'test', (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'difficulty': 0.0132, 'disconnect': false });
         done();
       });
     });
@@ -2314,7 +2314,7 @@ describe('Test pool functionality', () => {
           result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'test', (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'difficulty': 0.0132, 'disconnect': false });
         done();
       });
     });
@@ -2340,7 +2340,7 @@ describe('Test pool functionality', () => {
           result: null
         }));
       pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'test', (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
         done();
       });
     });

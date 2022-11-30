@@ -11,11 +11,12 @@ const zmq = require('zeromq');
 ////////////////////////////////////////////////////////////////////////////////
 
 // Main Pool Function
-const Pool = function(config, configMain, callback) {
+const Pool = function(config, configMain, callback, client) {
 
   const _this = this;
   this.config = config;
   this.configMain = configMain;
+  this.client = client;
   this.text = Text[configMain.language];
 
   // Pool Variables [1]
@@ -44,12 +45,14 @@ const Pool = function(config, configMain, callback) {
     }
   };
 
+  //XX Check db for initial difficulty in this function and return not only authorized but also diff
+  //XX Identify workers by addrPrimary / addrAuxiliary
   // Handle Worker Authentication
   this.authorizeWorker = function(ip, port, addrPrimary, addrAuxiliary, password, callback) {
     _this.checkPrimaryWorker(ip, port, addrPrimary, () => {
       _this.checkAuxiliaryWorker(ip, port, addrAuxiliary, (authAuxiliary) => {
         _this.emitLog('log', false, _this.text.stratumWorkersText1(addrPrimary, ip, port));
-        callback({ error: null, authorized: authAuxiliary, disconnect: false });
+        callback({ error: null, authorized: authAuxiliary, difficulty: 0.0132, disconnect: false });
       }, callback);
     }, callback);
   };
@@ -67,7 +70,7 @@ const Pool = function(config, configMain, callback) {
       if (authorized) callback(authorized);
       else {
         _this.emitLog('log', false, _this.text.stratumWorkersText2(address, ip, port));
-        callbackMain({ error: null, authorized: authorized, disconnect: false });
+        callbackMain({ error: null, authorized: authorized, difficulty: false, disconnect: false });
       }
     });
   };
@@ -79,12 +82,12 @@ const Pool = function(config, configMain, callback) {
         if (authorized) callback(authorized);
         else {
           _this.emitLog('log', false, _this.text.stratumWorkersText2(address, ip, port));
-          callbackMain({ error: null, authorized: authorized, disconnect: false });
+          callbackMain({ error: null, authorized: authorized, difficulty: false, disconnect: false });
         }
       });
     } else if (_this.auxiliary.enabled) {
       _this.emitLog('log', false, _this.text.stratumWorkersText2('<unknown>', ip, port));
-      callbackMain({ error: null, authorized: false, disconnect: false });
+      callbackMain({ error: null, authorized: false, difficulty: false, disconnect: false });
     } else {
       callback(true);
     }
@@ -1313,19 +1316,25 @@ const Pool = function(config, configMain, callback) {
     });
     client.on('client.ban.trigger', () => {
       _this.emitLog('warning', false, _this.text.stratumClientText10(client.sendLabel()));
-    });
+    }); 
 
     // Handle Client Subscription Events
-    client.on('client.subscription', (params, callback) => {
+    client.on('client.subscription', (callback) => {
       const extraNonce = _this.manager.extraNonceCounter.next();
       callback(null, extraNonce, _this.manager.extraNonce2Size);
+    });
 
+    // Handle Client Authorization Events
+    client.on('client.authorization', (difficulty) => {
       // Send Correct Initial Difficulty to Miner
       const validPorts = _this.config.ports
         .filter((port) => port.port === client.socket.localPort)
         .filter((port) => typeof port.difficulty.initial !== 'undefined');
-      if (validPorts.length >= 1) client.broadcastDifficulty(validPorts[0].difficulty.initial);
-      else client.broadcastDifficulty(8);
+      if (difficulty) {
+        client.broadcastDifficulty(difficulty);
+      } else if (validPorts.length >= 1) {
+        client.broadcastDifficulty(validPorts[0].difficulty.initial);
+      } else client.broadcastDifficulty(0.2); //XX this goes to main config?
 
       // Send Mining Job Parameters to Miner
       const jobParams = _this.manager.currentJob.handleParameters(true);
