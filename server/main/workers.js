@@ -17,7 +17,7 @@ const Workers = function (logger) {
   // Build Promise from Input Configuration
   this.handlePromises = function() {
     return new Promise((resolve, reject) => {
-      const stratum = new Stratum(_this.logger, _this.config, _this.difficulties, _this.configMain);
+      const stratum = new Stratum(_this.logger, _this.config, _this.configMain, _this.difficulties);
       stratum.setupStratum((text) => {
         if (text) reject(_this.text.startingErrorText1());
         else resolve(stratum);

@@ -4,7 +4,7 @@ const Text = require('../../locales/index');
 ////////////////////////////////////////////////////////////////////////////////
 
 // Main Stratum Function
-const Stratum = function (logger, config, difficulties, configMain) {
+const Stratum = function (logger, config, configMain, difficulties) {
 
   const _this = this;
   this.logger = logger;
