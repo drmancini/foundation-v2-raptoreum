@@ -120,7 +120,6 @@ const Client = function(config, socket, id, authorizeFn) {
   // Validate Socket Data
   this.validateData = function(data) {
 
-    // console.log(data) //XX
     // Client is Flooding Server
     _this.messages += data;
     if (Buffer.byteLength(_this.messages, 'utf8') > 10240) {
@@ -279,7 +278,8 @@ const Client = function(config, socket, id, authorizeFn) {
             error: result.error
           });
         })
-      });
+      }
+    );
   };
 
   // Manage Stratum Configuration

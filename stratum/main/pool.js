@@ -11,12 +11,12 @@ const zmq = require('zeromq');
 ////////////////////////////////////////////////////////////////////////////////
 
 // Main Pool Function
-const Pool = function(config, configMain, callback, client) {
+const Pool = function(config, configMain, difficulties, callback) {
 
   const _this = this;
   this.config = config;
   this.configMain = configMain;
-  this.client = client;
+  this.difficulties = difficulties;
   this.text = Text[configMain.language];
 
   // Pool Variables [1]
@@ -45,16 +45,27 @@ const Pool = function(config, configMain, callback, client) {
     }
   };
 
-  //XX Check db for initial difficulty in this function and return not only authorized but also diff
-  //XX Identify workers by addrPrimary / addrAuxiliary
+  // Get Cached Difficulty Value For a Given Worker
+  this.getWorkerDifficulty = function(worker, callback) {
+    Object.keys(_this.difficulties).forEach(entry => {
+      if (worker == entry) {
+        callback(_this.difficulties[entry]);
+      } else {
+        callback(false);
+      }
+    });
+  };
+
   // Handle Worker Authentication
   this.authorizeWorker = function(ip, port, addrPrimary, addrAuxiliary, password, callback) {
-    _this.checkPrimaryWorker(ip, port, addrPrimary, () => {
-      _this.checkAuxiliaryWorker(ip, port, addrAuxiliary, (authAuxiliary) => {
-        _this.emitLog('log', false, _this.text.stratumWorkersText1(addrPrimary, ip, port));
-        callback({ error: null, authorized: authAuxiliary, difficulty: 0.0132, disconnect: false });
+    _this.getWorkerDifficulty(addrPrimary, (workerDifficulty) => {
+      _this.checkPrimaryWorker(ip, port, addrPrimary, () => {
+        _this.checkAuxiliaryWorker(ip, port, addrAuxiliary, (authAuxiliary) => {
+          _this.emitLog('log', false, _this.text.stratumWorkersText1(addrPrimary, ip, port));
+          callback({ error: null, authorized: authAuxiliary, difficulty: workerDifficulty, disconnect: false });
+        }, callback);
       }, callback);
-    }, callback);
+    });
   };
 
   // Check Daemon for Valid Address
@@ -1339,6 +1350,7 @@ const Pool = function(config, configMain, callback, client) {
       // Send Mining Job Parameters to Miner
       const jobParams = _this.manager.currentJob.handleParameters(true);
       client.broadcastMiningJob(jobParams);
+      // console.log(jobParams)
     });
 
     // Handle Client Submission Events
