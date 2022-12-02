@@ -10,13 +10,14 @@ const Workers = function (logger) {
   this.logger = logger;
   this.config = JSON.parse(process.env.config);
   this.configMain = JSON.parse(process.env.configMain);
+  this.difficulties = {};
   this.stratum = null;
   this.text = Text[_this.configMain.language];
 
   // Build Promise from Input Configuration
   this.handlePromises = function() {
     return new Promise((resolve, reject) => {
-      const stratum = new Stratum(_this.logger, _this.config, _this.configMain);
+      const stratum = new Stratum(_this.logger, _this.config, _this.difficulties, _this.configMain);
       stratum.setupStratum((text) => {
         if (text) reject(_this.text.startingErrorText1());
         else resolve(stratum);
