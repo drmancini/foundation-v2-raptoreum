@@ -47,18 +47,19 @@ const Pool = function(config, configMain, difficulties, callback) {
 
   // Get Cached Difficulty Value For a Given Worker
   this.getWorkerDifficulty = function(worker, callback) {
+    let difficulty = 0;
     Object.keys(_this.difficulties).forEach(entry => {
       if (worker == entry) {
-        callback(_this.difficulties[entry]);
-      } else {
-        callback(false);
-      }
+        difficulty = _this.difficulties[entry];
+      };
     });
+    callback(difficulty);
   };
 
   // Handle Worker Authentication
   this.authorizeWorker = function(ip, port, addrPrimary, addrAuxiliary, password, callback) {
     _this.getWorkerDifficulty(addrPrimary, (workerDifficulty) => {
+      console.log(workerDifficulty)
       _this.checkPrimaryWorker(ip, port, addrPrimary, () => {
         _this.checkAuxiliaryWorker(ip, port, addrAuxiliary, (authAuxiliary) => {
           _this.emitLog('log', false, _this.text.stratumWorkersText1(addrPrimary, ip, port));
@@ -81,7 +82,7 @@ const Pool = function(config, configMain, difficulties, callback) {
       if (authorized) callback(authorized);
       else {
         _this.emitLog('log', false, _this.text.stratumWorkersText2(address, ip, port));
-        callbackMain({ error: null, authorized: authorized, difficulty: false, disconnect: false });
+        callbackMain({ error: null, authorized: authorized, difficulty: 0, disconnect: false });
       }
     });
   };
@@ -93,12 +94,12 @@ const Pool = function(config, configMain, difficulties, callback) {
         if (authorized) callback(authorized);
         else {
           _this.emitLog('log', false, _this.text.stratumWorkersText2(address, ip, port));
-          callbackMain({ error: null, authorized: authorized, difficulty: false, disconnect: false });
+          callbackMain({ error: null, authorized: authorized, difficulty: 0, disconnect: false });
         }
       });
     } else if (_this.auxiliary.enabled) {
       _this.emitLog('log', false, _this.text.stratumWorkersText2('<unknown>', ip, port));
-      callbackMain({ error: null, authorized: false, difficulty: false, disconnect: false });
+      callbackMain({ error: null, authorized: false, difficulty: 0, disconnect: false });
     } else {
       callback(true);
     }
@@ -1341,7 +1342,7 @@ const Pool = function(config, configMain, difficulties, callback) {
       const validPorts = _this.config.ports
         .filter((port) => port.port === client.socket.localPort)
         .filter((port) => typeof port.difficulty.initial !== 'undefined');
-      if (difficulty) {
+      if (difficulty > 0) {
         client.broadcastDifficulty(difficulty);
       } else if (validPorts.length >= 1) {
         client.broadcastDifficulty(validPorts[0].difficulty.initial);
