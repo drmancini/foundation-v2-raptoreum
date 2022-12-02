@@ -46,19 +46,26 @@ const Pool = function(config, configMain, difficulties, callback) {
   };
 
   // Get Cached Difficulty Value For a Given Worker
-  this.getWorkerDifficulty = function(worker, callback) {
+  this.getWorkerDifficulty = function(worker, port, callback) {
+    let targetTime;
+    _this.config.ports.forEach(entry => {
+      if (entry.port == port) {
+        targetTime = entry.difficulty.targetTime;
+      }
+    });
+    
     let difficulty = 0;
     Object.keys(_this.difficulties).forEach(entry => {
       if (worker == entry) {
-        difficulty = _this.difficulties[entry];
-      };
+        difficulty = _this.difficulties[entry] * targetTime;
+      }
     });
     callback(difficulty);
   };
 
   // Handle Worker Authentication
   this.authorizeWorker = function(ip, port, addrPrimary, addrAuxiliary, password, callback) {
-    _this.getWorkerDifficulty(addrPrimary, (workerDifficulty) => {
+    _this.getWorkerDifficulty(addrPrimary, port, (workerDifficulty) => {
       console.log(workerDifficulty)
       _this.checkPrimaryWorker(ip, port, addrPrimary, () => {
         _this.checkAuxiliaryWorker(ip, port, addrAuxiliary, (authAuxiliary) => {
