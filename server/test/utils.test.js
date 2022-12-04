@@ -14,9 +14,24 @@ describe('Test utility functionality', () => {
     expect(utils.countProcessForks(config)).toBe(2);
   });
 
-  test('Test implemented countProcessForks [4]', () => {
+  test('Test implemented countProcessForks [3]', () => {
     const config = { 'clustering': { 'enabled': true }};
     expect(utils.countProcessForks(config)).toBe(1);
+  });
+
+  test('Test implemented getCryptoNightRotation [4]', () => {
+    const hash = '7afbcc3b242749f17ac74c5748039fe4e4ed9196b88df76a46a778f8e6cd2611';
+    const expected = [1, 0, 2];
+    expect(utils.getCryptoNightRotation(hash)).toStrictEqual(expected);
+  });
+
+  test('Test implemented getDifficultyIndex [5]', () => {
+    const rotation = [1, 0, 2];
+    const cnRotations = {
+      DarkDarkliteFast: 123, 
+    };
+    const expected = 123;
+    expect(utils.getDifficultyIndex(rotation, cnRotations)).toStrictEqual(expected);
   });
 
   test('Test implemented loggerSeverity', () => {

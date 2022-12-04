@@ -19,6 +19,7 @@ const Client = function(config, socket, id, authorizeFn) {
   this.shares = { valid: 0, invalid: 0 };
 
   // Difficulty Variables
+  this.algorithmRotationRatio = null;
   this.pendingDifficulty = null;
   this.staticDifficulty = false;
 
@@ -188,6 +189,11 @@ const Client = function(config, socket, id, authorizeFn) {
     return true;
   };
 
+  // Broadcast Change CryptoNight Rotation Difficulty
+  this.broadcastDifficultyRatio = function(difficultyRatio) {
+    _this.algorithmRotationRatio = difficultyRatio;
+  };
+
   // Broadcast Mining Job to Stratum Client
   this.broadcastMiningJob = function(parameters) {
 
@@ -201,9 +207,15 @@ const Client = function(config, socket, id, authorizeFn) {
     }
 
     // Update Client Difficulty
-    if (_this.pendingDifficulty != null) {
+    if (_this.pendingDifficulty != null || _this.algorithmRotationRatio != null) {
+      if (_this.pendingDifficulty == null) _this.pendingDifficulty = _this.difficulty;
+      if (!_this.config.rotations.enabled || _this.algorithmRotationRatio == null) _this.algorithmRotationRatio = 1;
+      
+      _this.pendingDifficulty *= _this.algorithmRotationRatio;
+
       const result = _this.broadcastDifficulty(_this.pendingDifficulty);
       if (result) _this.emit('client.difficulty.updated', _this.difficulty);
+      _this.algorithmRotationRatio = null;
       _this.pendingDifficulty = null;
     }
 

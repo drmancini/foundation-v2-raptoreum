@@ -23,6 +23,16 @@ const Manager = function(config, configMain) {
   this.extraNoncePlaceholder = Buffer.from('f000000ff111111f', 'hex');
   this.extraNonce2Size = _this.extraNoncePlaceholder.length - _this.extraNonceCounter.size;
 
+  // Calculate CryptoNight Rotation Difficulty Ratio
+  this.handleAlgorithmRotation = function(currentHash, newHash) {
+    const currentRotation = utils.getCryptoNightRotation(currentHash);
+    const currentIndex = utils.getDifficultyIndex(currentRotation, _this.config.rotations);
+    const newRotation = utils.getCryptoNightRotation(newHash);
+    const newIndex = utils.getDifficultyIndex(newRotation, _this.config.rotations);
+    const difficultyRatio = Math.round(100 * newIndex / currentIndex) / 100;
+    _this.emit('manager.block.rotation', difficultyRatio);
+  }
+
   // Check if New Block is Processed
   this.handleUpdates = function(rpcData) {
 
@@ -33,6 +43,11 @@ const Manager = function(config, configMain) {
       Object.assign({}, rpcData),
       _this.extraNoncePlaceholder);
 
+    // Detect CryptoNight rotation
+    if (_this.currentJob && (tmpTemplate.rpcData.height > _this.currentJob.rpcData.height)) {
+      _this.handleAlgorithmRotation(_this.currentJob.rpcData.previousblockhash, tmpTemplate.rpcData.previousblockhash);
+    }
+
     // Update Current Template
     _this.currentJob = tmpTemplate;
     _this.emit('manager.block.updated', tmpTemplate);
@@ -42,7 +57,6 @@ const Manager = function(config, configMain) {
 
   // Check if New Block is Processed
   this.handleTemplate = function(rpcData, newBlock) {
-
     // If Current Job !== Previous Job
     let isNewBlock = _this.currentJob === null;
     if (!isNewBlock && rpcData.height >= _this.currentJob.rpcData.height &&
@@ -58,6 +72,11 @@ const Manager = function(config, configMain) {
       _this.config,
       Object.assign({}, rpcData),
       _this.extraNoncePlaceholder);
+
+    // Detect CryptoNight rotation
+    if (_this.currentJob && (tmpTemplate.rpcData.height > _this.currentJob.rpcData.height)) {
+      _this.handleAlgorithmRotation(_this.currentJob.rpcData.previousblockhash, tmpTemplate.rpcData.previousblockhash);
+    }
 
     // Update Current Template
     _this.validJobs = {};

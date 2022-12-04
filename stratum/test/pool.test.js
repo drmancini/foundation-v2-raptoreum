@@ -386,7 +386,7 @@ describe('Test pool functionality', () => {
         pool.setupManager();
         expect(typeof pool.manager).toBe('object');
         expect(typeof pool.manager.handleTemplate).toBe('function');
-        expect(pool.manager._eventsCount).toBe(3);
+        expect(pool.manager._eventsCount).toBe(4);
         done();
       });
     });
