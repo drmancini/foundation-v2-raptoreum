@@ -66,7 +66,6 @@ const Pool = function(config, configMain, difficulties, callback) {
   // Handle Worker Authentication
   this.authorizeWorker = function(ip, port, addrPrimary, addrAuxiliary, password, callback) {
     _this.getWorkerDifficulty(addrPrimary, port, (workerDifficulty) => {
-      console.log(workerDifficulty)
       _this.checkPrimaryWorker(ip, port, addrPrimary, () => {
         _this.checkAuxiliaryWorker(ip, port, addrAuxiliary, (authAuxiliary) => {
           _this.emitLog('log', false, _this.text.stratumWorkersText1(addrPrimary, ip, port));

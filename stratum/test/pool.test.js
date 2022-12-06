@@ -2196,7 +2196,7 @@ describe('Test pool functionality', () => {
           result: { isvalid: false, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.checkPrimaryWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
@@ -2213,7 +2213,7 @@ describe('Test pool functionality', () => {
           result: null
         }));
       pool.checkPrimaryWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
@@ -2251,7 +2251,7 @@ describe('Test pool functionality', () => {
           result: { isvalid: false, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.checkAuxiliaryWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
@@ -2263,7 +2263,7 @@ describe('Test pool functionality', () => {
     const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       pool.checkAuxiliaryWorker('0.0.0.0', 3001, null, () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
@@ -2289,14 +2289,51 @@ describe('Test pool functionality', () => {
           error: null,
           result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
-      pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', null, 'test', (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'difficulty': 0.0132, 'disconnect': false });
+      pool.getWorkerDifficulty('RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 3002, (diff) => {
+        expect(diff).toBe(0);
         done();
       });
     });
   });
 
   test('Test pool stratum authentication [11]', (done) => {
+    const diffs = {
+      RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1: 0.1,
+    };
+    const pool = new Pool(configCopy, configMainCopy, diffs, () => {});
+    mockSetupDaemons(pool, () => {
+      nock('http://127.0.0.1:9998')
+        .post('/', (body) => body.method === 'validateaddress')
+        .reply(200, JSON.stringify({
+          id: 'nocktest',
+          error: null,
+          result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
+        }));
+      pool.getWorkerDifficulty('RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 3002, (diff) => {
+        expect(diff).toStrictEqual(1.5);
+        done();
+      });
+    });
+  });
+
+  test('Test pool stratum authentication [12]', (done) => {
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
+    mockSetupDaemons(pool, () => {
+      nock('http://127.0.0.1:9998')
+        .post('/', (body) => body.method === 'validateaddress')
+        .reply(200, JSON.stringify({
+          id: 'nocktest',
+          error: null,
+          result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
+        }));
+      pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', null, 'test', (result) => {
+        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'difficulty': 0, 'disconnect': false });
+        done();
+      });
+    });
+  });
+
+  test('Test pool stratum authentication [13]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
@@ -2316,13 +2353,13 @@ describe('Test pool functionality', () => {
           result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'test', (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'difficulty': 0.0132, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
   });
 
-  test('Test pool stratum authentication [11]', (done) => {
+  test('Test pool stratum authentication [14]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
@@ -2342,7 +2379,7 @@ describe('Test pool functionality', () => {
           result: null
         }));
       pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'test', (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });

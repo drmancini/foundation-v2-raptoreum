@@ -209,7 +209,7 @@ describe('Test client functionality', () => {
 
   test('Test client message validation [3]', (done) => {
     const socket = mockSocket();
-    const output = { error: null, authorized: true, disconnect: false };
+    const output = { error: null, authorized: true, difficulty: 0, disconnect: false };
     const client = new Client(configCopy, socket, 0, (ip, port, addrPrimary, addrAuxiliary, password, callback) => callback(output));
     client.socket.on('log', (text) => {
       expect(text).toStrictEqual('{"id":null,"result":true,"error":null}\n');
@@ -220,10 +220,10 @@ describe('Test client functionality', () => {
 
   test('Test client message validation [4]', (done) => {
     const socket = mockSocket();
-    const output = { error: null, authorized: false, difficulty: false, disconnect: true };
+    const output = { error: null, authorized: false, difficulty: 0, disconnect: true };
     const client = new Client(configCopy, socket, 0, (ip, port, addrPrimary, addrAuxiliary, password, callback) => callback(output));
     client.socket.on('log', (text) => {
-      // expect(text).toStrictEqual('destroyed');
+      expect(text).toStrictEqual('destroyed');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.authorize', params: ['username', 'password'] });
@@ -231,7 +231,7 @@ describe('Test client functionality', () => {
 
   test('Test client message validation [5]', (done) => {
     const socket = mockSocket();
-    const output = { error: null, authorized: true, difficulty: false, disconnect: false };
+    const output = { error: null, authorized: true, difficulty: 0, disconnect: false };
     const client = new Client(configCopy, socket, 0, (ip, port, addrPrimary, addrAuxiliary, password, callback) => callback(output));
     client.socket.on('log', (text) => {
       expect(client.pendingDifficulty).toBe(500);
