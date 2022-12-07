@@ -91,7 +91,7 @@ const Manager = function(config, configMain) {
 
     // Main Submission Variables
     let difficulty = client.difficulty;
-    const submitTime = Date.now() / 1000 | 0;
+    const submitTime = Date.now();
     const job = _this.validJobs[jobId];
     const nTimeInt = parseInt(submission.nTime, 16);
 
@@ -112,6 +112,7 @@ const Manager = function(config, configMain) {
         blockType: 'share',
         difficulty: difficulty,
         identifier: _this.configMain.identifier || '',
+        submitTime: submitTime,
         error: error[1],
       }, false);
       return { error: error, response: null };
@@ -127,7 +128,7 @@ const Manager = function(config, configMain) {
     if (submission.nTime.length !== 8) {
       return shareError([20, 'incorrect size of ntime']);
     }
-    if (nTimeInt < job.rpcData.curtime || nTimeInt > submitTime + 7200) {
+    if (nTimeInt < job.rpcData.curtime || nTimeInt > (submitTime / 1000 | 0) + 7200) {
       return shareError([20, 'ntime out of range']);
     }
     if (submission.nonce.length !== 8) {
@@ -198,6 +199,7 @@ const Manager = function(config, configMain) {
       identifier: _this.configMain.identifier || '',
       reward: job.rpcData.coinbasevalue,
       shareDiff: shareDiff.toFixed(8),
+      submitTime: submitTime,
     };
 
     const auxShareData = {
@@ -217,6 +219,7 @@ const Manager = function(config, configMain) {
       headerDiff: headerBigInt,
       identifier: _this.configMain.identifier || '',
       shareDiff: shareDiff.toFixed(8),
+      submitTime: submitTime,
     };
 
     _this.emit('manager.share', shareData, auxShareData, blockValid);

@@ -4,12 +4,13 @@ const Text = require('../../locales/index');
 ////////////////////////////////////////////////////////////////////////////////
 
 // Main Stratum Function
-const Stratum = function (logger, config, configMain) {
+const Stratum = function (logger, config, configMain, difficulties) {
 
   const _this = this;
   this.logger = logger;
   this.config = config;
   this.configMain = configMain;
+  this.difficulties = difficulties;
   this.text = Text[configMain.language];
 
   // Stratum Variables
@@ -20,7 +21,7 @@ const Stratum = function (logger, config, configMain) {
   this.handleStratum = function(callback) {
 
     // Build Stratum Server
-    _this.stratum = new Pool(_this.config, _this.configMain, callback);
+    _this.stratum = new Pool(_this.config, _this.configMain, _this.difficulties, callback);
 
     // Handle Stratum Main Events
     _this.stratum.on('pool.started', () => {});

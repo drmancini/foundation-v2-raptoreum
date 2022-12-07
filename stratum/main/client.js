@@ -19,6 +19,7 @@ const Client = function(config, socket, id, authorizeFn) {
   this.shares = { valid: 0, invalid: 0 };
 
   // Difficulty Variables
+  this.algorithmRotationRatio = null;
   this.pendingDifficulty = null;
 
   // Send JSON Messages
@@ -46,7 +47,7 @@ const Client = function(config, socket, id, authorizeFn) {
   // Validate Client Name
   this.validateName = function(name) {
     if (name.length >= 1) {
-      name = name.toString().replace(/[^a-zA-Z0-9.,]+/g, '');
+      name = name.toString().replace(/[^a-zA-Z0-9.,_-]+/g, '');
     }
     const addresses = name.split(',');
     if (addresses.length > 1) {
@@ -210,7 +211,12 @@ const Client = function(config, socket, id, authorizeFn) {
     }
 
     // Update Client Difficulty
-    if (_this.pendingDifficulty != null) {
+    if (_this.pendingDifficulty != null || _this.algorithmRotationRatio != null) {
+      if (_this.pendingDifficulty == null) _this.pendingDifficulty = _this.difficulty;
+      if (!_this.config.rotations.enabled || _this.algorithmRotationRatio == null) _this.algorithmRotationRatio = 1;
+      
+      _this.pendingDifficulty *= _this.algorithmRotationRatio;
+
       const result = _this.broadcastDifficulty(_this.pendingDifficulty);
       if (result) _this.emit('client.difficulty.updated', _this.pendingDifficulty);
       _this.pendingDifficulty = null;
@@ -228,7 +234,7 @@ const Client = function(config, socket, id, authorizeFn) {
   this.handleSubscribe = function(message) {
 
     // Emit Subscription Event
-    _this.emit('client.subscription', {}, (error, extraNonce1, extraNonce2Size) => {
+    _this.emit('client.subscription', (error, extraNonce1, extraNonce2Size) => {
       if (error) {
         _this.sendJson({ id: message.id, result: null, error: error });
         return;
@@ -278,12 +284,16 @@ const Client = function(config, socket, id, authorizeFn) {
           _this.socket.destroy();
           return;
         }
-        _this.sendJson({
-          id: message.id,
-          result: _this.authorized,
-          error: result.error
-        });
-      });
+        // Emit Authorization Event
+        _this.emit('client.authorization', result.difficulty, () => {
+          _this.sendJson({
+            id: message.id,
+            result: _this.authorized,
+            error: result.error
+          });
+        })
+      }
+    );
   };
 
   // Manage Stratum Configuration
