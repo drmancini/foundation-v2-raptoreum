@@ -92,13 +92,13 @@ describe('Test difficulty functionality', () => {
   test('Test client difficulty management [4]', () => {
     MockDate.set(1634742080841);
     const difficulty = new Difficulty(difficultyCopy);
-    difficulty.clients['test'] = new Array(24).fill(0);
+    difficulty.clients['test'] = new Array(30).fill(0);
     difficulty.lastRetargetTime = 1634742070;
     difficulty.lastSavedTime = 1634742075;
     difficulty.handleDifficulty(client);
     expect(difficulty.lastRetargetTime).toBe(1634742070);
     expect(difficulty.lastSavedTime).toBe(1634742080);
-    expect(difficulty.clients['test'].length).toBe(24);
+    expect(difficulty.clients['test'].length).toBe(30);
     expect(difficulty.clients['test'].slice(-1)[0]).toBe(5);
   });
 
@@ -119,12 +119,12 @@ describe('Test difficulty functionality', () => {
   test('Test client difficulty management [6]', (done) => {
     MockDate.set(1634742080841);
     const difficulty = new Difficulty(difficultyCopy);
-    difficulty.clients['test'] = new Array(24).fill(0);
+    difficulty.clients['test'] = new Array(30).fill(0);
     difficulty.lastRetargetTime = 1634741500;
     difficulty.lastSavedTime = 1634742000;
     difficulty.on('client.difficulty.new', (client, current) => {
-      expect(current).toBe(144);
-      expect(difficulty.clients['test'].length).toBe(24);
+      expect(current).toBe(180);
+      expect(difficulty.clients['test'].length).toBe(30);
       done();
     });
     difficulty.handleDifficulty(client);
@@ -149,12 +149,12 @@ describe('Test difficulty functionality', () => {
     MockDate.set(1634742080841);
     const difficulty = new Difficulty(difficultyCopy);
     client.difficulty = 510;
-    difficulty.clients['test'] = new Array(24).fill(0);
+    difficulty.clients['test'] = new Array(30).fill(0);
     difficulty.lastRetargetTime = 1634741500;
     difficulty.lastSavedTime = 1634742000;
     difficulty.on('client.difficulty.new', (client, current) => {
       expect(current).toBe(512);
-      expect(difficulty.clients['test'].length).toBe(24);
+      expect(difficulty.clients['test'].length).toBe(30);
       done();
     });
     difficulty.handleDifficulty(client);
