@@ -53,6 +53,8 @@ const auxiliaryPaymentsConfig = {
   }
 };
 
+const difficulties = {};
+
 nock.disableNetConnect();
 nock.enableNetConnect('127.0.0.1');
 process.env.forkId = '0';
@@ -206,12 +208,12 @@ describe('Test pool functionality', () => {
   });
 
   test('Test initialization of pool', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     expect(typeof pool).toBe('object');
   });
 
   test('Test port difficulty setup [1]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       pool.setupPorts();
       expect(typeof pool.difficulty).toBe('object');
@@ -222,7 +224,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test port difficulty setup [2]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       pool.difficulty['3002'] = { removeAllListeners: () => done() };
       pool.setupPorts();
@@ -231,7 +233,7 @@ describe('Test pool functionality', () => {
 
   test('Test port difficulty setup [3]', (done) => {
     const client = { enqueueDifficulty: () => done() };
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       pool.setupPorts();
       pool.difficulty['3002'].emit('client.difficulty.new', client);
@@ -239,7 +241,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool settings setup [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('error');
@@ -253,7 +255,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool settings setup [2]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/').reply(200, JSON.stringify([
@@ -272,7 +274,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool settings setup [3]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('error');
@@ -293,7 +295,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool settings setup [4]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('error');
@@ -314,7 +316,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool settings setup [5]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/').reply(200, JSON.stringify([
@@ -333,7 +335,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool settings setup [6]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/').reply(200, JSON.stringify([
@@ -352,7 +354,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool recipient setup [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupRecipients();
@@ -364,7 +366,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool recipient setup [2]', (done) => {
     configCopy.primary.recipients = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('warning');
@@ -380,7 +382,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupManager();
@@ -393,7 +395,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [2]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupManager();
@@ -404,7 +406,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [3]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupManager();
@@ -415,7 +417,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [4]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupManager();
@@ -426,7 +428,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [5]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupManager();
@@ -437,7 +439,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [6]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('error');
@@ -499,7 +501,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [7]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('error');
@@ -562,7 +564,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool manager setup [8]', (done) => {
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -647,7 +649,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool manager setup [9]', (done) => {
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -736,7 +738,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool manager setup [10]', (done) => {
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -824,7 +826,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [11]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('error');
@@ -889,7 +891,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [12]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('error');
@@ -926,7 +928,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool manager setup [13]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('error');
@@ -963,7 +965,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool blockchain setup [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         nock('http://127.0.0.1:9998')
@@ -981,7 +983,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool blockchain setup [2]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('warning');
@@ -1020,7 +1022,7 @@ describe('Test pool functionality', () => {
   test('Test pool blockchain setup [3]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         nock('http://127.0.0.1:9996')
@@ -1040,7 +1042,7 @@ describe('Test pool functionality', () => {
   test('Test pool blockchain setup [4]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('warning');
@@ -1077,7 +1079,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool blockchain setup [5]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         nock('http://127.0.0.1:9996')
@@ -1095,7 +1097,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool first job setup [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupManager();
@@ -1121,7 +1123,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool first job setup [2]', (done) => {
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1154,7 +1156,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool first job setup [3]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('warning');
@@ -1182,7 +1184,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool first job setup [4]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupManager();
@@ -1207,7 +1209,7 @@ describe('Test pool functionality', () => {
     rpcDataCopy.height = 2;
     rpcDataCopy.previousblockhash = '1d5af7e2ad9aeccb110401761938c07a5895d85711c9c5646661a10407c82769';
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1256,7 +1258,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1323,7 +1325,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1390,7 +1392,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1452,7 +1454,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool stratum setup [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupManager();
@@ -1476,7 +1478,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool stratum setup [2]', (done) => {
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       response.push([type, text]);
       if (response.length === 9) {
@@ -1511,7 +1513,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool stratum setup [3]', (done) => {
     const response = [];
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       response.push([type, text]);
       if (response.length === 10) {
@@ -1546,7 +1548,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool stratum setup [4]', (done) => {
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('client.socket.success', () => {
       pool.network.on('network.stopped', () => done());
       pool.network.stopNetwork();
@@ -1569,7 +1571,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool stratum setup [5]', (done) => {
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       mockSetupSettings(pool, () => {
         pool.setupManager();
@@ -1593,7 +1595,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [6]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1627,7 +1629,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [7]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1664,7 +1666,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [8]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1700,7 +1702,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [9]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1736,7 +1738,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [10]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1772,7 +1774,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [11]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1808,7 +1810,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [12]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1844,7 +1846,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [13]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1880,7 +1882,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [14]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1916,7 +1918,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [15]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1952,7 +1954,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [16]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -1988,7 +1990,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [17]', (done) => {
     const response = [];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         response.push([type, text]);
@@ -2023,9 +2025,9 @@ describe('Test pool functionality', () => {
 
   test('Test pool stratum setup [18]', (done) => {
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('client.socket.success', () => {
-      client.emit('client.subscription', {}, () => {
+      client.emit('client.subscription', () => {
         pool.network.on('network.stopped', () => done());
         pool.network.stopNetwork();
       });
@@ -2049,9 +2051,9 @@ describe('Test pool functionality', () => {
   test('Test pool stratum setup [19]', (done) => {
     configCopy.ports = [{ 'port': 3002, 'enabled': true, 'difficulty': {}}];
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('client.socket.success', () => {
-      client.emit('client.subscription', {}, () => {
+      client.emit('client.subscription', () => {
         pool.network.on('network.stopped', () => done());
         pool.network.stopNetwork();
       });
@@ -2074,7 +2076,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool stratum setup [20]', (done) => {
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('client.socket.success', () => {
       pool.manager = { handleShare: () => {
         return { error: true, response: null };
@@ -2104,7 +2106,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool stratum setup [21]', (done) => {
     const client = mockClient();
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.on('client.socket.success', () => {
       pool.manager = { handleShare: () => {
         return { error: null, response: true };
@@ -2133,7 +2135,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool stratum authentication [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2150,7 +2152,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool stratum authentication [2]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2167,7 +2169,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool stratum authentication [3]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2184,7 +2186,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool stratum authentication [4]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2194,14 +2196,14 @@ describe('Test pool functionality', () => {
           result: { isvalid: false, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.checkPrimaryWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
   });
 
   test('Test pool stratum authentication [5]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2211,7 +2213,7 @@ describe('Test pool functionality', () => {
           result: null
         }));
       pool.checkPrimaryWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
@@ -2220,7 +2222,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum authentication [6]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9996')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2239,7 +2241,7 @@ describe('Test pool functionality', () => {
   test('Test pool stratum authentication [7]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9996')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2249,7 +2251,7 @@ describe('Test pool functionality', () => {
           result: { isvalid: false, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.checkAuxiliaryWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
@@ -2258,17 +2260,17 @@ describe('Test pool functionality', () => {
   test('Test pool stratum authentication [8]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       pool.checkAuxiliaryWorker('0.0.0.0', 3001, null, () => {}, (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
   });
 
   test('Test pool stratum authentication [9]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       pool.checkAuxiliaryWorker('0.0.0.0', 3001, null, (valid) => {
         expect(valid).toBe(true);
@@ -2278,7 +2280,44 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool stratum authentication [10]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
+    mockSetupDaemons(pool, () => {
+      nock('http://127.0.0.1:9998')
+        .post('/', (body) => body.method === 'validateaddress')
+        .reply(200, JSON.stringify({
+          id: 'nocktest',
+          error: null,
+          result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
+        }));
+      pool.getWorkerDifficulty('RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 3002, (diff) => {
+        expect(diff).toBe(0);
+        done();
+      });
+    });
+  });
+
+  test('Test pool stratum authentication [11]', (done) => {
+    const diffs = {
+      RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1: 0.1,
+    };
+    const pool = new Pool(configCopy, configMainCopy, diffs, () => {});
+    mockSetupDaemons(pool, () => {
+      nock('http://127.0.0.1:9998')
+        .post('/', (body) => body.method === 'validateaddress')
+        .reply(200, JSON.stringify({
+          id: 'nocktest',
+          error: null,
+          result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
+        }));
+      pool.getWorkerDifficulty('RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 3002, (diff) => {
+        expect(diff).toStrictEqual(1.5);
+        done();
+      });
+    });
+  });
+
+  test('Test pool stratum authentication [12]', (done) => {
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2288,16 +2327,16 @@ describe('Test pool functionality', () => {
           result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', null, 'test', (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
   });
 
-  test('Test pool stratum authentication [11]', (done) => {
+  test('Test pool stratum authentication [13]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2314,16 +2353,16 @@ describe('Test pool functionality', () => {
           result: { isvalid: true, address: 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1' }
         }));
       pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'test', (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': true, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
   });
 
-  test('Test pool stratum authentication [11]', (done) => {
+  test('Test pool stratum authentication [14]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'validateaddress')
@@ -2340,14 +2379,14 @@ describe('Test pool functionality', () => {
           result: null
         }));
       pool.authorizeWorker('0.0.0.0', 3001, 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'RHP3VKiSYH4putQeSKLwr47QDdERa6H6G1', 'test', (result) => {
-        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'disconnect': false });
+        expect(result).toStrictEqual({ 'error': null, 'authorized': false, 'difficulty': 0, 'disconnect': false });
         done();
       });
     });
   });
 
   test('Test pool rounds handling [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'gettransaction')
@@ -2371,7 +2410,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool rounds handling [2]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/').reply(200, JSON.stringify([
@@ -2401,7 +2440,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool rounds handling [3]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/').reply(200, JSON.stringify([
@@ -2429,7 +2468,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool rounds handling [4]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/').reply(200, JSON.stringify([
@@ -2454,7 +2493,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool rounds handling [5]', (done) => {
     transactionDataCopy.details = null;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/').reply(200, JSON.stringify([
@@ -2480,7 +2519,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool rounds handling [6]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9998')
         .post('/', (body) => body.method === 'gettransaction')
@@ -2501,7 +2540,7 @@ describe('Test pool functionality', () => {
   test('Test pool rounds handling [7]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9996')
         .post('/', (body) => body.method === 'gettransaction')
@@ -2527,7 +2566,7 @@ describe('Test pool functionality', () => {
   test('Test pool rounds handling [8]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9996')
         .post('/').reply(200, JSON.stringify([
@@ -2559,7 +2598,7 @@ describe('Test pool functionality', () => {
   test('Test pool rounds handling [9]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9996')
         .post('/').reply(200, JSON.stringify([
@@ -2589,7 +2628,7 @@ describe('Test pool functionality', () => {
   test('Test pool rounds handling [10]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9996')
         .post('/').reply(200, JSON.stringify([
@@ -2616,7 +2655,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     transactionDataCopy.details = null;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9996')
         .post('/').reply(200, JSON.stringify([
@@ -2644,7 +2683,7 @@ describe('Test pool functionality', () => {
   test('Test pool rounds handling [12]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     mockSetupDaemons(pool, () => {
       nock('http://127.0.0.1:9996')
         .post('/', (body) => body.method === 'gettransaction')
@@ -2663,7 +2702,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [1]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -2704,7 +2743,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [2]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -2745,7 +2784,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [3]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -2791,7 +2830,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [4]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -2838,7 +2877,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [5]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -2879,7 +2918,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [6]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -2920,7 +2959,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [7]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -2960,7 +2999,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [8]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3000,7 +3039,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [9]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3040,7 +3079,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [10]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3087,7 +3126,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [11]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3128,7 +3167,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [12]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3169,7 +3208,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [13]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3215,7 +3254,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [14]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3262,7 +3301,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [15]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3303,7 +3342,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [16]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3344,7 +3383,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [17]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3384,7 +3423,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [18]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3424,7 +3463,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [19]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3464,7 +3503,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool workers handling [20]', () => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const blocks1 = {
       id: '1',
       timestamp: '1662753912672',
@@ -3511,7 +3550,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool balance handling [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.handlePrimaryBalances({}, (error, result) => {
       expect(error).toBe(null);
       expect(result).toBe(0);
@@ -3521,7 +3560,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool balance handling [2]', (done) => {
     configCopy.primary.payments = primaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'listunspent')
@@ -3541,7 +3580,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool balance handling [3]', (done) => {
     configCopy.primary.payments = primaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 10 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'listunspent')
@@ -3561,7 +3600,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool balance handling [4]', (done) => {
     configCopy.primary.payments = primaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'listunspent')
@@ -3581,7 +3620,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool balance handling [5]', (done) => {
     configCopy.primary.payments = primaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'listunspent')
@@ -3601,7 +3640,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool balance handling [6]', (done) => {
     configCopy.primary.payments = primaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'listunspent')
@@ -3622,7 +3661,7 @@ describe('Test pool functionality', () => {
   test('Test pool balance handling [7]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.handleAuxiliaryBalances({}, (error, result) => {
       expect(error).toBe(null);
       expect(result).toBe(0);
@@ -3634,7 +3673,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'listunspent')
@@ -3656,7 +3695,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 10 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'listunspent')
@@ -3678,7 +3717,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'listunspent')
@@ -3700,7 +3739,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'listunspent')
@@ -3722,7 +3761,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'listunspent')
@@ -3741,7 +3780,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool payments handling [1]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.handlePrimaryPayments({}, (error, amounts, balances, transaction) => {
       expect(error).toBe(null);
       expect(amounts).toStrictEqual({});
@@ -3753,7 +3792,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool payments handling [2]', (done) => {
     configCopy.primary.payments = primaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'sendmany')
@@ -3778,7 +3817,7 @@ describe('Test pool functionality', () => {
     const primaryPaymentsConfigCopy = Object.assign({}, primaryPaymentsConfig);
     primaryPaymentsConfigCopy.minPayment = 10000000;
     configCopy.primary.payments = primaryPaymentsConfigCopy;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     const expectedBalances = { 'address1': 5000 };
     mockSetupDaemons(pool, () => {
@@ -3794,7 +3833,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool payments handling [4]', (done) => {
     configCopy.primary.payments = primaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'sendmany')
@@ -3816,7 +3855,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool payments handling [5]', (done) => {
     configCopy.primary.payments = primaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'sendmany')
@@ -3837,7 +3876,7 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool payments handling [6]', (done) => {
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     pool.handleAuxiliaryPayments({}, (error, amounts, balances, transaction) => {
       expect(error).toBe(null);
       expect(amounts).toStrictEqual({});
@@ -3851,7 +3890,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'sendmany')
@@ -3878,7 +3917,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfigCopy;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     const expectedBalances = { 'address1': 5000 };
     mockSetupDaemons(pool, () => {
@@ -3896,7 +3935,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'sendmany')
@@ -3920,7 +3959,7 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
+    const pool = new Pool(configCopy, configMainCopy, difficulties, () => {});
     const payments = { 'address1': 5000 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'sendmany')

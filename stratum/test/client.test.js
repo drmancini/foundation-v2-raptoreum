@@ -192,7 +192,7 @@ describe('Test client functionality', () => {
       expect(text).toStrictEqual('{"id":null,"result":[[["mining.set_difficulty",0],["mining.notify",0]],"extraNonce1","extraNonce2Size"],"error":null}\n');
       done();
     });
-    client.on('client.subscription', (params, callback) => callback(null, 'extraNonce1', 'extraNonce2Size'));
+    client.on('client.subscription', (callback) => callback(null, 'extraNonce1', 'extraNonce2Size'));
     client.validateMessages({ id: null, method: 'mining.subscribe' });
   });
 
@@ -203,13 +203,13 @@ describe('Test client functionality', () => {
       expect(text).toStrictEqual('{"id":null,"result":null,"error":true}\n');
       done();
     });
-    client.on('client.subscription', (params, callback) => callback(true, null, null));
+    client.on('client.subscription', (callback) => callback(true, null, null));
     client.validateMessages({ id: null, method: 'mining.subscribe' });
   });
 
   test('Test client message validation [3]', (done) => {
     const socket = mockSocket();
-    const output = { error: null, authorized: true, disconnect: false };
+    const output = { error: null, authorized: true, difficulty: 0, disconnect: false };
     const client = new Client(configCopy, socket, 0, (ip, port, addrPrimary, addrAuxiliary, password, callback) => callback(output));
     client.socket.on('log', (text) => {
       expect(text).toStrictEqual('{"id":null,"result":true,"error":null}\n');
@@ -220,7 +220,7 @@ describe('Test client functionality', () => {
 
   test('Test client message validation [4]', (done) => {
     const socket = mockSocket();
-    const output = { error: null, authorized: false, disconnect: true };
+    const output = { error: null, authorized: false, difficulty: 0, disconnect: true };
     const client = new Client(configCopy, socket, 0, (ip, port, addrPrimary, addrAuxiliary, password, callback) => callback(output));
     client.socket.on('log', (text) => {
       expect(text).toStrictEqual('destroyed');
@@ -231,7 +231,7 @@ describe('Test client functionality', () => {
 
   test('Test client message validation [5]', (done) => {
     const socket = mockSocket();
-    const output = { error: null, authorized: true, disconnect: false };
+    const output = { error: null, authorized: true, difficulty: 0, disconnect: false };
     const client = new Client(configCopy, socket, 0, (ip, port, addrPrimary, addrAuxiliary, password, callback) => callback(output));
     client.socket.on('log', (text) => {
       expect(client.pendingDifficulty).toBe(500);

@@ -7,7 +7,7 @@ const Difficulty = function(config) {
 
   const _this = this;
   this.config = config;
-  this.clients = {};
+  this.clients = {}; // load from redis?
 
   // Difficulty Variables
   this.maxSize = _this.config.retargetTime / _this.config.targetTime * 5;

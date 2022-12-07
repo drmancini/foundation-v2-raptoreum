@@ -37,7 +37,7 @@ describe('Test stratum functionality', () => {
 
   test('Test initialization of stratum', () => {
     const logger = new Logger(configMainCopy);
-    const stratum = new Stratum(logger, configCopy, configMainCopy);
+    const stratum = new Stratum(logger, configCopy, configMainCopy, difficulties);
     expect(typeof stratum.config).toBe('object');
     expect(typeof stratum.setupStratum).toBe('function');
   });
@@ -45,7 +45,7 @@ describe('Test stratum functionality', () => {
   test('Test stratum pool setup [1]', (done) => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const logger = new Logger(configMainCopy);
-    const stratum = new Stratum(logger, configCopy, configMainCopy);
+    const stratum = new Stratum(logger, configCopy, configMainCopy, difficulties);
     nock('http://127.0.0.1:9998')
       .post('/', (body) => body.method === 'getpeerinfo')
       .reply(200, JSON.stringify({
@@ -86,7 +86,7 @@ describe('Test stratum functionality', () => {
   test('Test stratum pool setup [2]', (done) => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const logger = new Logger(configMainCopy);
-    const stratum = new Stratum(logger, configCopy, configMainCopy);
+    const stratum = new Stratum(logger, configCopy, configMainCopy, difficulties);
     nock('http://127.0.0.1:9998')
       .post('/', (body) => body.method === 'getpeerinfo')
       .reply(200, JSON.stringify({

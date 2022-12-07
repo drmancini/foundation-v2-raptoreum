@@ -231,7 +231,7 @@ const Client = function(config, socket, id, authorizeFn) {
   this.handleSubscribe = function(message) {
 
     // Emit Subscription Event
-    _this.emit('client.subscription', {}, (error, extraNonce1, extraNonce2Size) => {
+    _this.emit('client.subscription', (error, extraNonce1, extraNonce2Size) => {
       if (error) {
         _this.sendJson({ id: message.id, result: null, error: error });
         return;
@@ -282,12 +282,16 @@ const Client = function(config, socket, id, authorizeFn) {
           _this.socket.destroy();
           return;
         }
-        _this.sendJson({
-          id: message.id,
-          result: _this.authorized,
-          error: result.error
-        });
-      });
+        // Emit Authorization Event
+        _this.emit('client.authorization', result.difficulty, () => {
+          _this.sendJson({
+            id: message.id,
+            result: _this.authorized,
+            error: result.error
+          });
+        })
+      }
+    );
   };
 
   // Manage Stratum Configuration
