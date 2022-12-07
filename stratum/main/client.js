@@ -19,9 +19,7 @@ const Client = function(config, socket, id, authorizeFn) {
   this.shares = { valid: 0, invalid: 0 };
 
   // Difficulty Variables
-  this.algorithmRotationRatio = null;
   this.pendingDifficulty = null;
-  this.staticDifficulty = false;
 
   // Send JSON Messages
   this.sendJson = function() {
@@ -41,10 +39,8 @@ const Client = function(config, socket, id, authorizeFn) {
 
   // Push Updated Difficulty to Queue
   this.enqueueDifficulty = function(difficulty) {
-    if (!_this.staticDifficulty) {
       _this.pendingDifficulty = difficulty;
       _this.emit('client.difficulty.queued', difficulty);
-    }
   };
 
   // Validate Client Name
@@ -191,7 +187,14 @@ const Client = function(config, socket, id, authorizeFn) {
 
   // Broadcast Change CryptoNight Rotation Difficulty
   this.broadcastDifficultyRatio = function(difficultyRatio) {
-    _this.algorithmRotationRatio = difficultyRatio;
+    let difficulty = _this.pendingDifficulty != null ? _this.pendingDifficulty : _this.difficulty;
+    difficulty *= difficultyRatio;
+
+    if (difficulty != _this.difficulty) {
+      const result = _this.broadcastDifficulty(difficulty);
+      if (result) _this.emit('client.difficulty.updated', difficulty);
+      _this.pendingDifficulty = null;
+    }
   };
 
   // Broadcast Mining Job to Stratum Client
@@ -207,15 +210,9 @@ const Client = function(config, socket, id, authorizeFn) {
     }
 
     // Update Client Difficulty
-    if (_this.pendingDifficulty != null || _this.algorithmRotationRatio != null) {
-      if (_this.pendingDifficulty == null) _this.pendingDifficulty = _this.difficulty;
-      if (!_this.config.rotations.enabled || _this.algorithmRotationRatio == null) _this.algorithmRotationRatio = 1;
-      
-      _this.pendingDifficulty *= _this.algorithmRotationRatio;
-
+    if (_this.pendingDifficulty != null) {
       const result = _this.broadcastDifficulty(_this.pendingDifficulty);
-      if (result) _this.emit('client.difficulty.updated', _this.difficulty);
-      _this.algorithmRotationRatio = null;
+      if (result) _this.emit('client.difficulty.updated', _this.pendingDifficulty);
       _this.pendingDifficulty = null;
     }
 
@@ -266,7 +263,6 @@ const Client = function(config, socket, id, authorizeFn) {
     // Check for Difficulty Flag
     if (clientFlags.difficulty) {
       _this.enqueueDifficulty(clientFlags.difficulty);
-      _this.staticDifficulty = true;
     }
 
     // Check to Authorize Client
