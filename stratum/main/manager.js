@@ -93,6 +93,7 @@ const Manager = function(config, configMain) {
         blockType: 'share',
         difficulty: difficulty,
         identifier: _this.configMain.identifier || '',
+        submitTime: submitTime,
         error: error[1],
       }, false);
       return { error: error, response: null };
