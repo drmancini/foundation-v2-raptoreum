@@ -10,51 +10,49 @@ const Difficulty = function(config) {
   this.clients = {};
 
   // Difficulty Variables
-  this.maxSize = 60 / _this.config.targetTime * 150;
-  this.maxBoundary = 1 + _this.config.variance;
-  this.minBoundary = 1 - _this.config.variance;
+  this.maxSize = _this.config.retargetTime / _this.config.targetTime * 4;
+  this.minTime = _this.config.targetTime * (1 + _this.config.variance);
+  this.maxTime = _this.config.targetTime * (1 - _this.config.variance);
 
   // Difficulty Saved Values
   this.lastRetargetTime = null;
+  this.lastSavedTime = null;
 
-  // Get New Difficulty Correction for Updates
-  this.getDiffCorrection = function(client) {
+  // Check Difficulty for Updates
+  this.checkDifficulty = function(client) {
 
     // Check that Client is Recorded
-    if (!(Object.keys(_this.clients).includes(client.id))) return null;
+    if (!(Object.keys(_this.clients).includes(client.id))) return;
 
-    // Setup Queue
-    const timestamps = _this.clients[client.id].timestamps;
-    const difficulties = _this.clients[client.id].difficulties;
-    const queueLength = difficulties.length;
+    // Calculate Average/Difference
+    let output = null;
+    const queue = _this.clients[client.id];
+    const curAverage = queue.reduce((a, b) => a + b, 0) / queue.length;
+    let curDifference = _this.config.targetTime / curAverage;
 
-    // Check that Queue has Sufficient Entries
-    if (queueLength < 2) return null;
+    // Shift Difficulty Down
+    if (curAverage > _this.maxTime && client.difficulty > _this.config.minimum) {
+      if (curDifference * client.difficulty < _this.config.minimum) {
+        curDifference = _this.config.minimum / client.difficulty;
+      }
+      output = curDifference;
 
-    // Process Queue
-    const difficultySum = difficulties.reduce((a, b) => a + b, 0);
-    const queueInterval = timestamps[timestamps.length - 1] - timestamps[0];
-    const targetDiff =  queueInterval != 0 ? _this.config.targetTime * difficultySum / queueInterval : client.difficulty;
+    // Shift Difficulty Up
+    } else if (curAverage < _this.minTime && client.difficulty < _this.config.maximum) {
+      if (curDifference * client.difficulty > _this.config.maximum) {
+        curDifference = _this.config.maximum / client.difficulty;
+      }
+      output = curDifference;
+    }
 
-    // Return New Difficulty
-    const diffCorrection = targetDiff / client.difficulty || 1;
-    return diffCorrection != 1 ? diffCorrection : null;
+    // Return Updated Difference
+    return output;
   };
 
-  // Add Event Listeners to Individual Clients
+  // Handle Individual Clients
   this.handleClient = function(client) {
 
-    // Client Subscribes
-    client.on('client.subscription', () => {
-      if (!(Object.keys(_this.clients).includes(client.id))) {
-        const curTime = (Date.now() / 1000) | 0;
-        _this.clients[client.id] = { difficulties: [], timestamps: [] };
-        _this.clients[client.id].timestamps.push(curTime);
-        _this.lastRetargetTime = curTime - _this.config.retargetTime / 2;
-      }
-    });
-
-    // Client Submission
+    // Add Event Listeners to Client Instance
     client.on('client.submit', () => _this.handleDifficulty(client));
   };
 
@@ -63,25 +61,29 @@ const Difficulty = function(config) {
 
     // Update Current Time/Values
     const curTime = (Date.now() / 1000) | 0;
+    if (!(Object.keys(_this.clients).includes(client.id))) _this.clients[client.id] = [];
+    if (!_this.lastRetargetTime) {
+      _this.lastRetargetTime = curTime - _this.config.retargetTime / 2;
+      _this.lastSavedTime = curTime;
+      return;
+    }
 
     // Append New Value to Queue
     const queue = _this.clients[client.id];
-    queue.difficulties.push(client.difficulty);
-    queue.timestamps.push(curTime);
-    if (queue.difficulties.length > _this.maxSize) {
-      queue.difficulties.shift();
-      queue.timestamps.shift();
-    };
+    if (queue.length >= _this.maxSize) queue.shift();
+    queue.push(curTime - _this.lastSavedTime);
+    _this.clients[client.id] = queue;
+    _this.lastSavedTime = curTime;
 
     // Calculate Difference Between Desired vs. Average Time
-    if ((curTime - _this.lastRetargetTime) < _this.config.retargetTime) return;
-    const diffCorrection = _this.getDiffCorrection(client);
+    if (curTime - _this.lastRetargetTime < _this.config.retargetTime) return;
+    const updatedDifficulty = this.checkDifficulty(client);
 
     // Difficulty Will Be Updated
-    if (diffCorrection != null && (diffCorrection > _this.maxBoundary || diffCorrection < _this.minBoundary)) {
-      let newDifficulty = client.difficulty * diffCorrection;
-      _this.emit('client.difficulty.new', client, newDifficulty);
-    };
+    if (updatedDifficulty !== null) {
+      const newDifference = parseFloat((client.difficulty * updatedDifficulty).toFixed(8));
+      _this.emit('client.difficulty.new', client, newDifference);
+    }
 
     // Update Retarget Time
     _this.lastRetargetTime = curTime;

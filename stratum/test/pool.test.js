@@ -568,7 +568,7 @@ describe('Test pool functionality', () => {
         response.push([type, text]);
         if (response.length === 2) {
           expect(response[0][0]).toBe('special');
-          expect(response[0][1]).toBe('Submitted a primary block (Raptoreum:1) found by addr1, successfully to Raptoreum\'s daemon instance(s)');
+          expect(response[0][1]).toBe('Submitted a primary block (Raptoreum:1) successfully to Raptoreum\'s daemon instance(s)');
           expect(response[1][0]).toBe('error');
           expect(response[1][1]).toBe('The block was rejected by the network');
           done();
@@ -650,7 +650,7 @@ describe('Test pool functionality', () => {
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('special');
-        expect(text).toBe('Submitted a primary block (Raptoreum:1) found by addr1, successfully to Raptoreum\'s daemon instance(s)');
+        expect(text).toBe('Submitted a primary block (Raptoreum:1) successfully to Raptoreum\'s daemon instance(s)');
         done();
       }
     });
@@ -3882,7 +3882,7 @@ describe('Test pool functionality', () => {
 
   test('Test pool payments handling [1]', (done) => {
     const pool = new Pool(configCopy, configMainCopy, () => {});
-    pool.handlePrimaryPayments({}, {}, (error, amounts, balances, transaction) => {
+    pool.handlePrimaryPayments({}, (error, amounts, balances, transaction) => {
       expect(error).toBe(null);
       expect(amounts).toStrictEqual({});
       expect(balances).toStrictEqual({});
@@ -3895,7 +3895,6 @@ describe('Test pool functionality', () => {
     configCopy.primary.payments = primaryPaymentsConfig;
     const pool = new Pool(configCopy, configMainCopy, () => {});
     const payments = { 'address1': 5000 };
-    const users = { 'address1': 5 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'sendmany')
       .reply(200, JSON.stringify({
@@ -3905,7 +3904,7 @@ describe('Test pool functionality', () => {
       }));
     const expectedAmounts = { 'address1': 5000 };
     mockSetupDaemons(pool, () => {
-      pool.handlePrimaryPayments(payments, users, (error, amounts, balances, transaction) => {
+      pool.handlePrimaryPayments(payments, (error, amounts, balances, transaction) => {
         expect(error).toBe(null);
         expect(amounts).toStrictEqual(expectedAmounts);
         expect(balances).toStrictEqual({});
@@ -3921,10 +3920,9 @@ describe('Test pool functionality', () => {
     configCopy.primary.payments = primaryPaymentsConfigCopy;
     const pool = new Pool(configCopy, configMainCopy, () => {});
     const payments = { 'address1': 5000 };
-    const users = { 'address1': 5 };
     const expectedBalances = { 'address1': 5000 };
     mockSetupDaemons(pool, () => {
-      pool.handlePrimaryPayments(payments, users, (error, amounts, balances, transaction) => {
+      pool.handlePrimaryPayments(payments, (error, amounts, balances, transaction) => {
         expect(error).toBe(null);
         expect(amounts).toStrictEqual({});
         expect(balances).toStrictEqual(expectedBalances);
@@ -3935,17 +3933,21 @@ describe('Test pool functionality', () => {
   });
 
   test('Test pool payments handling [4]', (done) => {
-    const primaryPaymentsConfigCopy = Object.assign({}, primaryPaymentsConfig);
-    configCopy.primary.payments = primaryPaymentsConfigCopy;
+    configCopy.primary.payments = primaryPaymentsConfig;
     const pool = new Pool(configCopy, configMainCopy, () => {});
     const payments = { 'address1': 5000 };
-    const users = { 'address1': 6000 };
-    const expectedBalances = { 'address1': 5000 };
+    nock('http://127.0.0.2:9998')
+      .post('/', (body) => body.method === 'sendmany')
+      .reply(200, JSON.stringify({
+        id: 'nocktest',
+        error: true,
+        result: null,
+      }));
     mockSetupDaemons(pool, () => {
-      pool.handlePrimaryPayments(payments, users, (error, amounts, balances, transaction) => {
-        expect(error).toBe(null);
+      pool.handlePrimaryPayments(payments, (error, amounts, balances, transaction) => {
+        expect(error).toBe(true);
         expect(amounts).toStrictEqual({});
-        expect(balances).toStrictEqual(expectedBalances);
+        expect(balances).toStrictEqual({});
         expect(transaction).toBe(null);
         done();
       });
@@ -3956,30 +3958,6 @@ describe('Test pool functionality', () => {
     configCopy.primary.payments = primaryPaymentsConfig;
     const pool = new Pool(configCopy, configMainCopy, () => {});
     const payments = { 'address1': 5000 };
-    const users = { 'address1': 5 };
-    nock('http://127.0.0.2:9998')
-      .post('/', (body) => body.method === 'sendmany')
-      .reply(200, JSON.stringify({
-        id: 'nocktest',
-        error: true,
-        result: null,
-      }));
-    mockSetupDaemons(pool, () => {
-      pool.handlePrimaryPayments(payments, users, (error, amounts, balances, transaction) => {
-        expect(error).toBe(true);
-        expect(amounts).toStrictEqual({});
-        expect(balances).toStrictEqual({});
-        expect(transaction).toBe(null);
-        done();
-      });
-    });
-  });
-
-  test('Test pool payments handling [6]', (done) => {
-    configCopy.primary.payments = primaryPaymentsConfig;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
-    const payments = { 'address1': 5000 };
-    const users = { 'address1': 5 };
     nock('http://127.0.0.2:9998')
       .post('/', (body) => body.method === 'sendmany')
       .reply(200, JSON.stringify({
@@ -3988,7 +3966,7 @@ describe('Test pool functionality', () => {
         result: null,
       }));
     mockSetupDaemons(pool, () => {
-      pool.handlePrimaryPayments(payments, users, (error, amounts, balances, transaction) => {
+      pool.handlePrimaryPayments(payments, (error, amounts, balances, transaction) => {
         expect(error).toBe('bad-transaction-undefined');
         expect(amounts).toStrictEqual({});
         expect(balances).toStrictEqual({});
@@ -3998,9 +3976,9 @@ describe('Test pool functionality', () => {
     });
   });
 
-  test('Test pool payments handling [7]', (done) => {
+  test('Test pool payments handling [6]', (done) => {
     const pool = new Pool(configCopy, configMainCopy, () => {});
-    pool.handleAuxiliaryPayments({}, {}, (error, amounts, balances, transaction) => {
+    pool.handleAuxiliaryPayments({}, (error, amounts, balances, transaction) => {
       expect(error).toBe(null);
       expect(amounts).toStrictEqual({});
       expect(balances).toStrictEqual({});
@@ -4009,13 +3987,12 @@ describe('Test pool functionality', () => {
     });
   });
 
-  test('Test pool payments handling [8]', (done) => {
+  test('Test pool payments handling [7]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
     const pool = new Pool(configCopy, configMainCopy, () => {});
     const payments = { 'address1': 5000 };
-    const users = { 'address1': 5 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'sendmany')
       .reply(200, JSON.stringify({
@@ -4025,7 +4002,7 @@ describe('Test pool functionality', () => {
       }));
     const expectedAmounts = { 'address1': 5000 };
     mockSetupDaemons(pool, () => {
-      pool.handleAuxiliaryPayments(payments, users, (error, amounts, balances, transaction) => {
+      pool.handleAuxiliaryPayments(payments, (error, amounts, balances, transaction) => {
         expect(error).toBe(null);
         expect(amounts).toStrictEqual(expectedAmounts);
         expect(balances).toStrictEqual({});
@@ -4035,7 +4012,7 @@ describe('Test pool functionality', () => {
     });
   });
 
-  test('Test pool payments handling [9]', (done) => {
+  test('Test pool payments handling [8]', (done) => {
     const auxiliaryPaymentsConfigCopy = Object.assign({}, auxiliaryPaymentsConfig);
     auxiliaryPaymentsConfigCopy.minPayment = 10000000;
     configCopy.auxiliary = auxiliaryConfig;
@@ -4043,10 +4020,9 @@ describe('Test pool functionality', () => {
     configCopy.auxiliary.payments = auxiliaryPaymentsConfigCopy;
     const pool = new Pool(configCopy, configMainCopy, () => {});
     const payments = { 'address1': 5000 };
-    const users = { 'address1': 5 };
     const expectedBalances = { 'address1': 5000 };
     mockSetupDaemons(pool, () => {
-      pool.handleAuxiliaryPayments(payments, users, (error, amounts, balances, transaction) => {
+      pool.handleAuxiliaryPayments(payments, (error, amounts, balances, transaction) => {
         expect(error).toBe(null);
         expect(amounts).toStrictEqual({});
         expect(balances).toStrictEqual(expectedBalances);
@@ -4056,33 +4032,12 @@ describe('Test pool functionality', () => {
     });
   });
 
-  test('Test pool payments handling [10]', (done) => {
-    const auxiliaryPaymentsConfigCopy = Object.assign({}, auxiliaryPaymentsConfig);
-    configCopy.auxiliary = auxiliaryConfig;
-    configCopy.auxiliary.daemons = auxiliaryDaemons;
-    configCopy.auxiliary.payments = auxiliaryPaymentsConfigCopy;
-    const pool = new Pool(configCopy, configMainCopy, () => {});
-    const payments = { 'address1': 5000 };
-    const users = { 'address1': 6000 };
-    const expectedBalances = { 'address1': 5000 };
-    mockSetupDaemons(pool, () => {
-      pool.handleAuxiliaryPayments(payments, users, (error, amounts, balances, transaction) => {
-        expect(error).toBe(null);
-        expect(amounts).toStrictEqual({});
-        expect(balances).toStrictEqual(expectedBalances);
-        expect(transaction).toBe(null);
-        done();
-      });
-    });
-  });
-
-  test('Test pool payments handling [11]', (done) => {
+  test('Test pool payments handling [9]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
     const pool = new Pool(configCopy, configMainCopy, () => {});
     const payments = { 'address1': 5000 };
-    const users = { 'address1': 5 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'sendmany')
       .reply(200, JSON.stringify({
@@ -4091,7 +4046,7 @@ describe('Test pool functionality', () => {
         result: null,
       }));
     mockSetupDaemons(pool, () => {
-      pool.handleAuxiliaryPayments(payments, users, (error, amounts, balances, transaction) => {
+      pool.handleAuxiliaryPayments(payments, (error, amounts, balances, transaction) => {
         expect(error).toBe(true);
         expect(amounts).toStrictEqual({});
         expect(balances).toStrictEqual({});
@@ -4101,13 +4056,12 @@ describe('Test pool functionality', () => {
     });
   });
 
-  test('Test pool payments handling [12]', (done) => {
+  test('Test pool payments handling [10]', (done) => {
     configCopy.auxiliary = auxiliaryConfig;
     configCopy.auxiliary.daemons = auxiliaryDaemons;
     configCopy.auxiliary.payments = auxiliaryPaymentsConfig;
     const pool = new Pool(configCopy, configMainCopy, () => {});
     const payments = { 'address1': 5000 };
-    const users = { 'address1': 5 };
     nock('http://127.0.0.2:9996')
       .post('/', (body) => body.method === 'sendmany')
       .reply(200, JSON.stringify({
@@ -4116,7 +4070,7 @@ describe('Test pool functionality', () => {
         result: null,
       }));
     mockSetupDaemons(pool, () => {
-      pool.handleAuxiliaryPayments(payments, users, (error, amounts, balances, transaction) => {
+      pool.handleAuxiliaryPayments(payments, (error, amounts, balances, transaction) => {
         expect(error).toBe('bad-transaction-undefined');
         expect(amounts).toStrictEqual({});
         expect(balances).toStrictEqual({});

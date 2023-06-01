@@ -1,5 +1,4 @@
 const events = require('events');
-const utils = require('./utils');
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -12,15 +11,6 @@ const Client = function(config, socket, id, authorizeFn) {
   this.socket = socket;
   this.authorizeFn = authorizeFn;
 
-  // Get Correct Active Port Limits
-  const activePort = _this.config.ports
-    .filter((port) => port.port === _this.socket.localPort)
-    .filter((port) => typeof port.difficulty.minimum !== undefined)
-    .filter((port) => typeof port.difficulty.maximum !== undefined)
-
-  this.minDiff = activePort[0].difficulty.minimum;
-  this.maxDiff = activePort[0].difficulty.maximum;
-
   // Client Variables
   this.activity = Date.now();
   this.authorized = false;
@@ -30,6 +20,7 @@ const Client = function(config, socket, id, authorizeFn) {
 
   // Difficulty Variables
   this.pendingDifficulty = null;
+  this.staticDifficulty = false;
 
   // Send JSON Messages
   this.sendJson = function() {
@@ -49,9 +40,10 @@ const Client = function(config, socket, id, authorizeFn) {
 
   // Push Updated Difficulty to Queue
   this.enqueueDifficulty = function(difficulty) {
-    const newDiff = utils.roundTo(difficulty, 4);
-    _this.pendingDifficulty = newDiff;
-    _this.emit('client.difficulty.queued', newDiff);
+    if (!_this.staticDifficulty) {
+      _this.pendingDifficulty = difficulty;
+      _this.emit('client.difficulty.queued', difficulty);
+    }
   };
 
   // Validate Client Name
@@ -87,13 +79,10 @@ const Client = function(config, socket, id, authorizeFn) {
     switch (message.method) {
 
     // Supported Stratum Messages
-    case 'keepalived':
-      _this.handleKeepalived(message);
-      break;
     case 'mining.subscribe':
       _this.handleSubscribe(message);
       break;
-      case 'mining.authorize':
+    case 'mining.authorize':
       _this.handleAuthorize(message);
       break;
     case 'mining.configure':
@@ -200,7 +189,7 @@ const Client = function(config, socket, id, authorizeFn) {
   };
 
   // Broadcast Mining Job to Stratum Client
-  this.broadcastMiningJob = function(parameters, diffIndex, diffRatio) {
+  this.broadcastMiningJob = function(parameters) {
 
     // Check Processed Shares
     const activityAgo = Date.now() - _this.activity;
@@ -211,37 +200,12 @@ const Client = function(config, socket, id, authorizeFn) {
       return;
     }
 
-    // Set New Pending Difficulty
-    let result = null;
-    if (_this.pendingDifficulty > 0) {
-
-      // Apply CN Round Difficulty Index
-      _this.pendingDifficulty *= diffIndex;
-
-      // Check Limits
-      if (_this.minDiff > _this.pendingDifficulty) {
-        _this.pendingDifficulty = _this.minDiff;
-      } else if (_this.maxDiff < _this.pendingDifficulty) {
-        _this.pendingDifficulty = _this.maxDiff;
-      }
-      result = _this.broadcastDifficulty(_this.pendingDifficulty);
-    } else if (diffRatio != 1 && _this.difficulty > 0) {
-      
-      // Apply CN Round Difficulty Ratio
-      _this.pendingDifficulty = _this.difficulty * diffRatio;
-
-      // Check Limits
-      if (_this.minDiff > _this.pendingDifficulty) {
-        _this.pendingDifficulty = _this.minDiff;
-      } else if (_this.maxDiff < _this.pendingDifficulty) {
-        _this.pendingDifficulty = _this.maxDiff;
-      }
-      result = _this.broadcastDifficulty(_this.pendingDifficulty);
+    // Update Client Difficulty
+    if (_this.pendingDifficulty != null) {
+      const result = _this.broadcastDifficulty(_this.pendingDifficulty);
+      if (result) _this.emit('client.difficulty.updated', _this.difficulty);
+      _this.pendingDifficulty = null;
     }
-    
-    // Emit Difficulty Update
-    _this.pendingDifficulty = null;
-    if (result != null) _this.emit('client.difficulty.updated', _this.difficulty);
 
     // Broadcast Mining Job to Client
     _this.sendJson({
@@ -251,27 +215,11 @@ const Client = function(config, socket, id, authorizeFn) {
     });
   };
 
-  // Manage Stratum Keepalived
-  this.handleKeepalived = function(message) {
-
-    // Broadcast Keepalived Response
-    _this.sendJson({
-      id: message.id,
-      result: {
-        "status": "KEEPALIVED"
-      },
-      error: null,
-    });
-
-    // Keep Worker Connection Alive
-    _this.activity = Date.now();
-  };
-
   // Manage Stratum Subscription
   this.handleSubscribe = function(message) {
 
     // Emit Subscription Event
-    _this.emit('client.subscription', message, (error, extraNonce1, extraNonce2Size) => {
+    _this.emit('client.subscription', {}, (error, extraNonce1, extraNonce2Size) => {
       if (error) {
         _this.sendJson({ id: message.id, result: null, error: error });
         return;
@@ -303,6 +251,12 @@ const Client = function(config, socket, id, authorizeFn) {
     _this.addrAuxiliary = clientAddrs[1];
     _this.clientPassword = message.params[1];
 
+    // Check for Difficulty Flag
+    if (clientFlags.difficulty) {
+      _this.enqueueDifficulty(clientFlags.difficulty);
+      _this.staticDifficulty = true;
+    }
+
     // Check to Authorize Client
     _this.authorizeFn(
       _this.socket.remoteAddress,
@@ -321,11 +275,7 @@ const Client = function(config, socket, id, authorizeFn) {
           result: _this.authorized,
           error: result.error
         });
-
-        // Emit Authorization Event
-        _this.emit('client.authorization', clientFlags);
-      }
-    );
+      });
   };
 
   // Manage Stratum Configuration
