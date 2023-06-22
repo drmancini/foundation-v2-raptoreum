@@ -153,6 +153,7 @@ function mockSetupFirstJob(pool, callback) {
 function mockSocket() {
   const socket = new events.EventEmitter();
   socket.remoteAddress = '127.0.0.1',
+  socket.server = { _connectionKey: '::3002'}
   socket.destroy = () => {};
   socket.setEncoding = () => {};
   socket.setKeepAlive = () => {};
@@ -568,7 +569,7 @@ describe('Test pool functionality', () => {
         response.push([type, text]);
         if (response.length === 2) {
           expect(response[0][0]).toBe('special');
-          expect(response[0][1]).toBe('Submitted a primary block (Raptoreum:1) found by addr1, successfully to Raptoreum\'s daemon instance(s)');
+          expect(response[0][1]).toBe(`Successfully submitted a primary block (Raptoreum:1) to Raptoreum's daemon instance(s) - found by addr1`);
           expect(response[1][0]).toBe('error');
           expect(response[1][1]).toBe('The block was rejected by the network');
           done();
@@ -650,7 +651,7 @@ describe('Test pool functionality', () => {
     pool.on('pool.log', (type, text) => {
       if (type !== 'debug') {
         expect(type).toBe('special');
-        expect(text).toBe('Submitted a primary block (Raptoreum:1) found by addr1, successfully to Raptoreum\'s daemon instance(s)');
+        expect(text).toBe(`Successfully submitted a primary block (Raptoreum:1) to Raptoreum's daemon instance(s) - found by addr1`);
         done();
       }
     });
